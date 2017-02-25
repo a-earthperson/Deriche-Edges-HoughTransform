@@ -33,19 +33,19 @@ int main() {
     double alpha;
 
     alpha = -1.0;
-    //run("../bitmaps/image1.bmp", "grayscale_image1.csv", "hough_image1.csv", alpha);
-    //run("../bitmaps/image2.bmp", "grayscale_image2.csv", "hough_image2.csv", alpha);
-    //run("../bitmaps/image3.bmp", "grayscale_image3.csv", "hough_image3.csv", alpha);
+    run("../bitmaps/image1.bmp", "../outputs/grayscale_image1.csv", "../outputs/hough_image1.csv", alpha);
+    run("../bitmaps/image2.bmp", "../outputs/grayscale_image2.csv", "../outputs/hough_image2.csv", alpha);
+    run("../bitmaps/image3.bmp", "../outputs/grayscale_image3.csv", "../outputs/hough_image3.csv", alpha);
 
     alpha = 1.0;
-    //run("../bitmaps/diamond.bmp", "grayscale_diamond.csv", "hough_diamond.csv", alpha);
+    run("../bitmaps/diamond.bmp", "../outputs/grayscale_diamond.csv", "../outputs/hough_diamond.csv", alpha);
 
-    run("../bitmaps/triangle.bmp", "grayscale_triangle.csv", "hough_triangle.csv", alpha);
+    run("../bitmaps/triangle.bmp", "../outputs/grayscale_triangle.csv", "../outputs/hough_triangle.csv", alpha);
 
     alpha = -1.0;
-    //run("../bitmaps/hexagon.bmp", "grayscale_hexagon.csv", "hough_hexagon.csv", alpha);
+    run("../bitmaps/hexagon.bmp", "../outputs/grayscale_hexagon.csv", "../outputs/hough_hexagon.csv", alpha);
 
-    //alpha = 0.4;
-    //run("../bitmaps/rick_and_morty.bmp", "grayscale_rick_and_morty.csv", "hough_rick_and_morty.csv", alpha);
+    alpha = 0.4;
+    run("../bitmaps/rick_and_morty.bmp", "../outputs/grayscale_rick_and_morty.csv", "../outputs/hough_rick_and_morty.csv", alpha);
     return 0;
 }
