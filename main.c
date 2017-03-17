@@ -3,49 +3,69 @@
 #include "src/hough.h"
 #include "src/deriche.h"
 
+void processImage(char *inputFile, const double deriche_alpha, const int low_hys, const int high_hys, char *grayFile, char *houghFile) {
 
-void run(char * path, char* gray_out, char* hough_out, const double alpha) {
+    /* Step 0: Read BMP */
+    unsigned char *BMPin = imread(inputFile);
 
-    unsigned char *input = imread(path);
-    Mat grayedImage = color2gray(input);
-    free(input);
+    /* Step 1: Convert BMP image to grayscale matrix */
+    Mat grayedImage = color2gray(BMPin);
+    free(BMPin);
 
-    if(alpha >= 0.0) edgeDetect(&grayedImage, alpha);
+    /* Step 2: Deriche Edge Detector : in-place
+     *
+     *     2a: blur image
+     *     2b: x-gradient
+     *     2c: y-gradient
+     *     2d: non-maximum suppression
+     *     2e: hysteresis thresholding
+     */
+    if (deriche_alpha > 0.0) edgeDetect(&grayedImage, deriche_alpha, low_hys, high_hys);
 
-    Mat houghImage = houghtransform(&grayedImage);
+    /* Step 3: Hough Transform */
+    Mat houghImage = HoughTransform(&grayedImage);
 
-    writeMat_toCSV(hough_out, houghImage);
-    writeMat_toCSV(gray_out, grayedImage);
+    /* Step 4: Get Polygon Edge Count */
+    const unsigned int edgeCount = getPolygonEdgeCount(&houghImage);
 
-    unsigned int edge_count = detect_polygon_edge_count(&houghImage);
-    double orientation_angle = detect_polygon_orientation(&houghImage);
+    /* Step 5: Get Polygon Orientation */
+    const double orientation = getPolygonOrientation(&houghImage);
 
+    /* Step 6: Get Polygon side-lengths */
+    double *sideLengths;
+    getPolygonSideLengths(&houghImage, sideLengths);
+
+    /* Print results */
+    printf("Polygon Edge Count  : %d\n", edgeCount);
+    printf("Polygon Orientation : %f\n", orientation);
+
+    /* Optional steps: write to csv */
+    writeMat_toCSV(houghFile, houghImage);
+    writeMat_toCSV(grayFile, grayedImage);
 
     destroyMatrix(&grayedImage);
     destroyMatrix(&houghImage);
-
-    printf("Polygon Edge Count  : %d\n", edge_count);
-    printf("Polygon Orientation : %f\n", orientation_angle);
 }
 
 int main() {
 
-    double alpha;
+    /** Hollow - well defined images **/
+    //processImage("../bitmaps/image1.bmp", 1.0, 10, 20, "../outputs/grayscale/image1.csv", "../outputs/hough/image1.csv");
+    //processImage("../bitmaps/image2.bmp", 1.0, 10, 20, "../outputs/grayscale/image2.csv", "../outputs/hough/image2.csv");
+    //processImage("../bitmaps/image3.bmp", 40, 10, 20, "../outputs/grayscale/image3.csv", "../outputs/hough/image3.csv");
 
-    alpha = -1.0;
-    run("../bitmaps/image1.bmp", "../outputs/grayscale_image1.csv", "../outputs/hough_image1.csv", alpha);
-    run("../bitmaps/image2.bmp", "../outputs/grayscale_image2.csv", "../outputs/hough_image2.csv", alpha);
-    run("../bitmaps/image3.bmp", "../outputs/grayscale_image3.csv", "../outputs/hough_image3.csv", alpha);
+    /** Hollow - Hand drawn images **/
+    processImage("../bitmaps/hexagon.bmp", 0.0, 10, 20, "../outputs/grayscale/hexagon.csv", "../outputs/hough/hexagon.csv");
+    //processImage("../bitmaps/triangle.bmp", 1.0, 100, 150, "../outputs/grayscale/triangle.csv", "../outputs/hough/triangle.csv");
 
-    alpha = 1.0;
-    run("../bitmaps/diamond.bmp", "../outputs/grayscale_diamond.csv", "../outputs/hough_diamond.csv", alpha);
+    /** Solid - well defined polygons **/
+    //processImage("../bitmaps/solid_cube.bmp", 0.0, 100, 150, "../outputs/grayscale/solid_cube.csv", "../outputs/hough/solid_cube.csv");
 
-    run("../bitmaps/triangle.bmp", "../outputs/grayscale_triangle.csv", "../outputs/hough_triangle.csv", alpha);
+    /** Solid - Handrawn polygons **/
+    //processImage("../bitmaps/diamond.bmp", 1.1, 5, 200, "../outputs/grayscale/diamond.csv", "../outputs/hough/diamond.csv");
 
-    alpha = -1.0;
-    run("../bitmaps/hexagon.bmp", "../outputs/grayscale_hexagon.csv", "../outputs/hough_hexagon.csv", alpha);
+    /** Partially filled, handrawn polygon **/
+    //processImage("../bitmaps/rick_and_morty.bmp", 1.0, 100, 150, "../outputs/grayscale/rick_and_morty.bmp", "../outputs/hough/rick_and_morty.bmp");
 
-    alpha = 0.4;
-    run("../bitmaps/rick_and_morty.bmp", "../outputs/grayscale_rick_and_morty.csv", "../outputs/hough_rick_and_morty.csv", alpha);
     return 0;
 }

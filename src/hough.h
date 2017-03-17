@@ -36,7 +36,7 @@ void performHough(size_t x, size_t y, double brightness, size_t diag_len,  doubl
     }
 }
 
-Mat houghtransform(Mat *grayscale_img) {
+Mat HoughTransform(Mat *grayscale_img) {
 
     size_t i;
 
@@ -61,7 +61,7 @@ Mat houghtransform(Mat *grayscale_img) {
     for (i = 0; i < img_pixel_count; i++)
     {
         const double pixel_value = grayscale_img->data[i];
-        printf("pixel_value:%f\n", pixel_value);
+        ///printf("pixel_value:%f\n", pixel_value);
         if (pixel_value > HOUGH_THRESHOLD)
         {
             const size_t y = (i / img_width);
@@ -204,7 +204,82 @@ double getKernelMean(double *data, size_t offset, const size_t width, const size
     return mean;
 }
 
-int detect_polygon_edge_count(Mat *image){
+void mask_image(Mat *image, const size_t idx_start, const int maskSize) {
+
+    const size_t height = image->height;
+    const size_t width = image->width;
+    const size_t pixel_count = width * height;
+
+    int x = idx_start % width;
+    int y = idx_start / width;
+
+    int x_start = (x - 20/2) > 0 ? (x - 20/2) : x;
+    int y_start = (y - maskSize/2) > 0 ? (y - maskSize/2) : y;
+
+    //printf("inside mask image: x_start:%lu, x:%lu, idx_start:%lu, y_start:%lu, y:%lu\n", x_start, x, idx_start, y_start, y);
+
+    for(x_start = (x - maskSize/2) > 0 ? (x - maskSize/2) : x; x_start <= (x + maskSize/2); x_start++)
+    {
+        for(y_start = (y - maskSize/2) > 0 ? (y - maskSize/2) : y; y_start <= (y + maskSize/2); y_start++)
+        {
+            const size_t idx = (y_start * width) + x_start;
+            //printf("masking @ x:%lu, y:%lu, i:%lu\n", x_start, y_start, idx);
+            image->data[idx] = 0;
+        }
+    }
+    return;
+}
+
+
+//    size_t x = idx_max % width;
+//    size_t y = idx_max % width;
+//    for(x = hlf_krnl; x < (width); x+=maskSize)
+//    //    for(x = hlf_krnl; x < (width); x+=kernel_size)
+////    {
+////        for(y = hlf_krnl; y < (height); y+=kernel_size)
+////        {
+////            const size_t idx = (y * width) + x;
+////            const double brightness = image->data[idx];
+////            const double max = getKernelMean(image->data, idx, width, pixel_count, kernel_size);
+////
+////            //printf("kernal val:%f\n", max);
+//////            if (brightness >= (4 * mean) && mean != 0.0)
+//////            {
+//////
+//////                ///image->data[idx] = 255.0;
+//////            }
+//////            else
+//////                image->data[idx] = 0.0;
+////
+////        }
+////    }
+unsigned int find_next_max(Mat *image) {
+
+    const size_t height = image->height;
+    const size_t width = image->width;
+    const size_t pixel_count = width * height;
+
+    unsigned int i, idx_max = 0;
+    double max = 0;
+    for(i = 0; i < pixel_count; i++)
+    {
+        if(image->data[i] > max)
+        {
+            max = image->data[i];
+            idx_max = i;
+        }
+        //max = (image->data[i] > max) ? (image->data[i]) : max;
+        //idx_max = (image->data[i] > max) ? i : idx_max;
+        //printf("max_found_at:%lu, max_value:%f\n", idx_max, max);
+    }
+    printf("max_found_at:%lu, max_value:%f\n", idx_max, max);
+
+    //image->data[idx_max] = 0.0;
+
+    return idx_max;
+}
+
+unsigned int getPolygonEdgeCount(Mat *image){
 
     const size_t height = image->height;
     const size_t width = image->width;
@@ -214,45 +289,74 @@ int detect_polygon_edge_count(Mat *image){
     const size_t kernel_size = 20;//(size_t) sqrt(pixel_count) / 10;
     const size_t hlf_krnl = kernel_size/2;
     size_t x, y;
+    double current_max;
+    double running_max_avg = 0;
+    size_t num_max_found = 0;
 
-    printf("Since pixel_count is %lu, kernel size is :%lu\n", pixel_count, kernel_size);
+//    while(num_max_found++ != 4) {
+//        const unsigned int idx = find_next_max(image);
+//        current_max = image->data[idx];
+//        mask_image(image, idx, 20);
+//    }
+    printf("setting kernel size to :%lu\n", height/16);
 
-    for(x = hlf_krnl; x < (width); x+=kernel_size)
+    while(1)
     {
-        for(y = hlf_krnl; y < (height); y+=kernel_size)
+        const unsigned int idx = find_next_max(image);
+        current_max = image->data[idx];
+        mask_image(image, idx, height/8);
+
+        //image->data[idx] = 0.0;
+        if(current_max >= (0.87 * running_max_avg))
         {
-            const size_t idx = (y * width) + x;
-            const double brightness = image->data[idx];
-            const double max = getKernelMean(image->data, idx, width, pixel_count, kernel_size);
-
-            //printf("kernal val:%f\n", max);
-//            if (brightness >= (4 * mean) && mean != 0.0)
-//            {
-//
-//                ///image->data[idx] = 255.0;
-//            }
-//            else
-//                image->data[idx] = 0.0;
-
+            running_max_avg = ((running_max_avg * num_max_found++) + current_max) / num_max_found;
+            printf("running_max_avg:%f, num_max_found:%lu, curr_max:%f\n", running_max_avg, num_max_found, current_max);
         }
+        else
+            break;
     }
-    //qsort(image->data, pixel_count, sizeof(double), cmpfunc);
-    //double median = image->data[0];
 
-    const double mean = 0.0;//sum/(pixel_count);
-    int count = 0;
-    for(x = 0; x < pixel_count; x++)
-    {
-        count = (image->data[x] > mean * 51.0) ? count+1 : count;
-    }
-    //printf("max:%f, sum:%f, mean:%f, median:%f, count:%d\n", max, sum, mean, median, count);
-    return count;
+    return num_max_found;
+//
+//    printf("Since pixel_count is %lu, kernel size is :%lu\n", pixel_count, kernel_size);
+//
+//    for(x = hlf_krnl; x < (width); x+=kernel_size)
+//    {
+//        for(y = hlf_krnl; y < (height); y+=kernel_size)
+//        {
+//            const size_t idx = (y * width) + x;
+//            const double brightness = image->data[idx];
+//            const double max = getKernelMean(image->data, idx, width, pixel_count, kernel_size);
+//
+//            //printf("kernal val:%f\n", max);
+////            if (brightness >= (4 * mean) && mean != 0.0)
+////            {
+////
+////                ///image->data[idx] = 255.0;
+////            }
+////            else
+////                image->data[idx] = 0.0;
+//
+//        }
+//    }
+//    //qsort(image->data, pixel_count, sizeof(double), cmpfunc);
+//    //double median = image->data[0];
+//
+//    const double mean = 0.0;//sum/(pixel_count);
+//    int count = 0;
+//    for(x = 0; x < pixel_count; x++)
+//    {
+//        count = (image->data[x] > mean * 51.0) ? count+1 : count;
+//    }
+//    //printf("max:%f, sum:%f, mean:%f, median:%f, count:%d\n", max, sum, mean, median, count);
+//    return count;
 }
-double detect_polygon_orientation(Mat *image){
+double getPolygonOrientation(Mat *image){
     return -1;
 }
-#endif //HOUGHTRANSFORM_HOUGH_H
-//max = (image->data[idx] > max) ? image->data[idx] : max;
-//sum += (image->data[idx]);
-//printf("x:%lu, y:%lu, idx:%lu, mag:%f\n", x,y,idx,image->data[idx]);
 
+void getPolygonSideLengths(Mat *image, double *out_array) {
+
+}
+
+#endif //HOUGHTRANSFORM_HOUGH_H

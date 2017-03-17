@@ -123,58 +123,98 @@ void getGradient(Mat *Gradx, Mat *Grady, Mat*image) {
 
     const size_t pixel_count = width * height;
 
-    size_t x,y;
-
-    for(x = 1; x < width-1; x++)
+    for (int i = 1; i < width - 1; i++)
     {
-        for (y = 1; y < height - 1; y++)
+        for (int j = 1; j < height - 1; j++)
         {
-            size_t idx = (y * width) + x;
+            const int c = i + width * j;
+            const int nn = c - width;
+            const int ss = c + width;
+            const int ww = c + 1;
+            const int ee = c - 1;
+            const int nw = nn + 1;
+            const int ne = nn - 1;
+            const int sw = ss + 1;
+            const int se = ss - 1;
 
-            int dx = (Gradx->data[idx] > 0) ? 1 : -1;
-            int dy = (Grady->data[idx] > 0) ? 1 : -1;
+            const double G_c  = hypot(Gradx->data[c], Grady->data[c]);
+//            const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
+//            const double G_ww = hypot(Gradx->data[ww], Grady->data[ww]);
+//            const double G_nw = hypot(Gradx->data[nw], Grady->data[nw]);
+//            const double G_nn = hypot(Gradx->data[nn], Grady->data[nn]);
+//            const double G_ne = hypot(Gradx->data[ne], Grady->data[ne]);
+//            const double G_se = hypot(Gradx->data[se], Grady->data[se]);
+//            const double G_ss = hypot(Gradx->data[ss], Grady->data[ss]);
+//            const double G_sw = hypot(Gradx->data[sw], Grady->data[sw]);
 
-            size_t a1_offset, b1_offset;
+            image->data[c] = (G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
+            continue;
+            const float dir = (float) (fmod(atan2(Grady->data[c], Gradx->data[c]) + M_PI, M_PI) / M_PI) * 8;
+//
+//            if (((dir <= 1 || dir > 7) && G_c > G_ee && G_c > G_ww) || // 0 deg
+//                ((dir > 1 && dir <= 3) && G_c > G_nw && G_c > G_se) || // 45 deg
+//                ((dir > 3 && dir <= 5) && G_c > G_nn && G_c > G_ss) || // 90 deg
+//                ((dir > 5 && dir <= 7) && G_c > G_ne && G_c > G_sw))   // 135 deg
+//
+//                image->data[c] = G_c;
+//            else
+//                image->data[c] = 0.0;
+//
 
-            double first, second;
-
-            if (abs((int) Gradx->data[idx]) > abs((int) Grady->data[idx]))
-            {
-                a1_offset = (x + dx) + ((y + 00) * width);
-                b1_offset = (x - dx) + ((y + 00) * width);
-
-                first = Gradx->data[idx];
-                second = Grady->data[idx];
-            } else
-            {
-                a1_offset = (x + 00) + ((y - dy) * width);
-                b1_offset = (x + 00) + ((y + dy) * width);
-
-                first = Grady->data[idx];
-                second = Gradx->data[idx];
-            }
-
-            size_t a2_offset = (x + dx) + ((y - dy) * width);
-            size_t b2_offset = (x - dx) + ((y + dy) * width);
-
-            const double a1 = hypot(Gradx->data[a1_offset], Grady->data[a1_offset]);
-            const double a2 = hypot(Gradx->data[a2_offset], Grady->data[a2_offset]);
-            const double b1 = hypot(Gradx->data[b1_offset], Grady->data[b1_offset]);
-            const double b2 = hypot(Gradx->data[b2_offset], Grady->data[b2_offset]);
-
-            const double A = (first) - a1 * (second) + a2 * (second);
-            const double B = (first) - b1 * (second) + b2 * (second);
-
-            const double gradMag = hypot(Gradx->data[idx], Grady->data[idx]);
-            const double P = gradMag * (first);
-
-            double val = (P >= A && P >= B) ? gradMag : 0;
-
-            image->data[idx] = val;//0xff000000 | ((int) (val) << 16 | (int) (val) << 8 | (int) (val));
-            printf("graient:%f\n", image->data[idx]);
-            //(gradMag >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
         }
     }
+//    size_t x,y;
+//
+//    for(x = 1; x < width-1; x++)
+//    {
+//        for (y = 1; y < height - 1; y++)
+//        {
+//            size_t idx = (y * width) + x;
+//
+//            int dx = (Gradx->data[idx] > 0) ? 1 : -1;
+//            int dy = (Grady->data[idx] > 0) ? 1 : -1;
+//
+//            size_t a1_offset, b1_offset;
+//
+//            double first, second;
+//
+//            if (abs((int) Gradx->data[idx]) > abs((int) Grady->data[idx]))
+//            {
+//                a1_offset = (x + dx) + ((y + 00) * width);
+//                b1_offset = (x - dx) + ((y + 00) * width);
+//
+//                first = Gradx->data[idx];
+//                second = Grady->data[idx];
+//            } else
+//            {
+//                a1_offset = (x + 00) + ((y - dy) * width);
+//                b1_offset = (x + 00) + ((y + dy) * width);
+//
+//                first = Grady->data[idx];
+//                second = Gradx->data[idx];
+//            }
+//
+//            size_t a2_offset = (x + dx) + ((y - dy) * width);
+//            size_t b2_offset = (x - dx) + ((y + dy) * width);
+//
+//            const double a1 = hypot(Gradx->data[a1_offset], Grady->data[a1_offset]);
+//            const double a2 = hypot(Gradx->data[a2_offset], Grady->data[a2_offset]);
+//            const double b1 = hypot(Gradx->data[b1_offset], Grady->data[b1_offset]);
+//            const double b2 = hypot(Gradx->data[b2_offset], Grady->data[b2_offset]);
+//
+//            const double A = (first) - a1 * (second) + a2 * (second);
+//            const double B = (first) - b1 * (second) + b2 * (second);
+//
+//            const double gradMag = hypot(Gradx->data[idx], Grady->data[idx]);
+//            const double P = gradMag * (first);
+//
+//            double val = (P >= A && P >= B) ? gradMag : 0;
+//
+//            image->data[idx] = val;//0xff000000 | ((int) (val) << 16 | (int) (val) << 8 | (int) (val));
+//            printf("graient:%f\n", image->data[idx]);
+//            //(gradMag >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
+//        }
+//    }
             //double a1, a2, b1, b2, A, B, point, val;
 //
 //            const double yGrad = Grady->data[k];
@@ -382,7 +422,7 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
     }
 }
 
-void edgeDetect(Mat *image, const double ALPHA) {
+void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIGH_HYS) {
 
     const double k_numerator = (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
     const double k_denominator = 1.0 + (2.0 * ALPHA * exp(-1.0 * ALPHA)) - exp(-2.0 * ALPHA);
@@ -444,9 +484,9 @@ void edgeDetect(Mat *image, const double ALPHA) {
     /** perform x-derivative **/
     Mat yGradient = dericheFilter(image, &yDerivativeCoeffs);
 
-    //getGradient(&xGradient, &yGradient, image);
+    getGradient(&xGradient, &yGradient, image);
 
-    hysteresisThreshold(image, 100, 150);
+    if(LOW_HYS >= 1 && HIGH_HYS >=1) hysteresisThreshold(image, LOW_HYS, HIGH_HYS);
 
     destroyMatrix(&yGradient);
     destroyMatrix(&xGradient);

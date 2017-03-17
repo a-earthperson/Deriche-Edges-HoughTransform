@@ -1,35 +1,32 @@
-import matplotlib as mpl
+import glob
+import scipy.misc
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
-import scipy.misc
 
-def show_plots(filename):
+def get_files(dirs='outputs/'):
+    grayfiles = glob.glob(dirs+'grayscale/*.csv')
+    houghfiles = glob.glob(dirs+'hough/*.csv')
+    return zip(grayfiles, houghfiles)
 
-    hough_csv = np.genfromtxt('cmake-build-debug/hough_'+filename+'.csv', delimiter=',', skip_header=0, skip_footer=0)
-    gray_csv  = np.genfromtxt('cmake-build-debug/grayscale_'+filename+'.csv', delimiter=',', skip_header=0, skip_footer=0)
+def plot_images(gray, hough):
+    gray_csv    = np.genfromtxt(gray,  delimiter=',', skip_header=0, skip_footer=0)
+    hough_csv   = np.genfromtxt(hough, delimiter=',', skip_header=0, skip_footer=0)
+    gray_image  = scipy.misc.toimage(gray_csv, cmin=np.min(gray_csv), cmax=np.max(gray_csv))
+    hough_image = scipy.misc.toimage(hough_csv, cmin=np.min(hough_csv), cmax=np.max(hough_csv))
 
-    gray_img = scipy.misc.toimage(gray_csv, cmin=np.min(gray_csv), cmax=np.max(gray_csv))
-    hough_img = scipy.misc.toimage(hough_csv, cmin=np.min(hough_csv), cmax=np.max(hough_csv))
-
-    #plt.imshow('bitmaps/'+filename+'.bmp')
-    #plt.show()
-
-    plt.imshow(gray_img, cmap='gray', interpolation='none')
+    plt.imshow(gray_image, cmap='gray', interpolation='none')
     plt.show()
 
-    plt.imshow(hough_img, interpolation='none')
+    plt.imshow(hough_image, interpolation='none')
     plt.show()
 
-#show_plots('rick_and_morty')
+def show_plots():
+    filetuples = get_files()
+    for gray_file, hough_file in filetuples:
+        plot_images(gray_file, hough_file)
 
 
-#how_plots('hexagon')
-#show_plots('diamond')
-
-show_plots('triangle')
-#show_plots('image1')
-#show_plots('image2')
-#show_plots('image3')
-#show_plots('diamond')
-exit()
+if __name__ == "__main__":
+    show_plots()

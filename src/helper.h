@@ -28,9 +28,9 @@ void writeMat_toCSV(char* name, Mat imageMap) {
 
     size_t x, y;
 
-    for(y=0; y < h; y++)
+    for(y = 0; y < h; y++)
     {
-        for(x=0; x < (w-1); x++)
+        for(x = 0; x < (w-1); x++)
         {
             fprintf(MATout, "%f,", imageMap.data[(y*w) + x]);
         }
