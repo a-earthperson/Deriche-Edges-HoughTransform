@@ -422,7 +422,7 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
     }
 }
 
-void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIGH_HYS) {
+Mat dericheBlur(const Mat *image, const double ALPHA) {
 
     const double k_numerator = (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
     const double k_denominator = 1.0 + (2.0 * ALPHA * exp(-1.0 * ALPHA)) - exp(-2.0 * ALPHA);
@@ -444,8 +444,36 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
     blurCoeffs.c2 = 1.0;
 
     /** perform smoooting  **/
-    dericheFilter(image, &blurCoeffs);
+    Mat blurred = dericheFilter(image, &blurCoeffs);
+    return blurred;
+}
 
+void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIGH_HYS, const int BLUR) {
+
+    const double k_numerator = (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
+    const double k_denominator = 1.0 + (2.0 * ALPHA * exp(-1.0 * ALPHA)) - exp(-2.0 * ALPHA);
+    const double k = k_numerator/k_denominator;
+
+    /** Prepare co-efficients for blurring pass **/
+    DericheCoeffs blurCoeffs;
+    blurCoeffs.a1 = k;
+    blurCoeffs.a2 = k * exp(-1.0 * ALPHA) * (ALPHA - 1.0);
+    blurCoeffs.a3 = k * exp(-1.0 * ALPHA) * (ALPHA + 1.0);
+    blurCoeffs.a4 = -1.0 * k * exp(-2.0 * ALPHA);
+    blurCoeffs.a5 = blurCoeffs.a1;
+    blurCoeffs.a6 = blurCoeffs.a2;
+    blurCoeffs.a7 = blurCoeffs.a3;
+    blurCoeffs.a8 = blurCoeffs.a4;
+    blurCoeffs.b1 = 2.0 * exp(-1.0 * ALPHA);
+    blurCoeffs.b2 = -1.0 * exp(-2.0 * ALPHA);
+    blurCoeffs.c1 = 1.0;
+    blurCoeffs.c2 = 1.0;
+
+    if(BLUR)
+    {
+        /** perform smoooting  **/
+        dericheFilter(image, &blurCoeffs);
+    }
     /** Prepare co-efficients for x-derivative pass **/
     DericheCoeffs xDerivativeCoeffs;
     xDerivativeCoeffs.a1 = 0.0;
@@ -480,7 +508,6 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
     yDerivativeCoeffs.c1 = xDerivativeCoeffs.c2;
     yDerivativeCoeffs.c2 = xDerivativeCoeffs.c1;
 
-
     /** perform x-derivative **/
     Mat yGradient = dericheFilter(image, &yDerivativeCoeffs);
 
@@ -490,7 +517,6 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
 
     destroyMatrix(&yGradient);
     destroyMatrix(&xGradient);
-
 }
 
 

@@ -9,6 +9,9 @@
 #define BLOCK_SIZE 24
 
 
+
+
+
 typedef struct seg
 {
 	void* left;
@@ -30,7 +33,7 @@ void mem_init()
 {
 	int i;
 	sp = s_mem;
-	
+
 	for(i = 1;i < MAX_SEG;i ++)
 	{
 		pointers[i].left = 0;
@@ -65,7 +68,7 @@ void sort(seg_t* table)
 				table[j].left = temp.left;
 				table[j].right = temp.right;
 			}
-		}	
+		}
 	}
 }
 
@@ -77,7 +80,7 @@ void* m_malloc(unsigned int size)  //allocates sdram
 		perror("no more segment");
 		return NULL;
 	}
-	
+
 	if(mem_count == 0)
 	{
 		if(size > QUEUE_SIZE)
@@ -89,8 +92,8 @@ void* m_malloc(unsigned int size)  //allocates sdram
 		{
 			pointers[0].left = m_mem;
 			pointers[0].right = m_mem + size - 1;
-			printf("Memory Count = %d\n", mem_count);
-			printf("Memory of size = %d Bytes is allocated address from %p to %p.\n", size, pointers[mem_count].left, pointers[mem_count].right);
+			//printf("Memory Count = %d\n", mem_count);
+			//printf("Memory of size = %d Bytes is allocated address from %p to %p.\n", size, pointers[mem_count].left, pointers[mem_count].right);
 
 			mem_count ++;
 			upper_bound_m += size;
@@ -100,7 +103,7 @@ void* m_malloc(unsigned int size)  //allocates sdram
 	}
 
 	sort(pointers);
-	
+
 	for(i = 0;i < mem_count - 1;i ++)
 	{
 		if((unsigned int)pointers[i + 1].left - (unsigned int)pointers[i].right > size)
@@ -189,7 +192,7 @@ void m_stat()
 	{
 		printf("The process used at most %u BYTE external memory.\n", upper_bound_m);
 	}
-	
+
 	if(upper_bound_s / 1024 / 1024 != 0)
 	{
 		printf("The process used at most %u MB external stack.\n", upper_bound_s / 1024 / 1024);

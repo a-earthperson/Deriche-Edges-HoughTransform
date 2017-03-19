@@ -12,7 +12,7 @@ def get_files(dirs='outputs/'):
 
 def plot_images(gray, hough):
     gray_csv    = np.genfromtxt(gray,  delimiter=',', skip_header=0, skip_footer=0)
-    hough_csv   = np.genfromtxt(hough, delimiter=',', skip_header=0, skip_footer=0)
+    hough_csv   = np.nan_to_num(np.genfromtxt(hough, delimiter=',', skip_header=0, skip_footer=0))
     gray_image  = scipy.misc.toimage(gray_csv, cmin=np.min(gray_csv), cmax=np.max(gray_csv))
     hough_image = scipy.misc.toimage(hough_csv, cmin=np.min(hough_csv), cmax=np.max(hough_csv))
 

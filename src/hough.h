@@ -15,8 +15,9 @@
 #define VERBOSE 0
 
 #include <math.h>
-#include "bmp_clean.h"
+#include "bmp.h"
 #include "helper.h"
+#include "deriche.h"
 
 
 void performHough(size_t x, size_t y, double brightness, size_t diag_len,  double *accumulator) {
@@ -36,6 +37,30 @@ void performHough(size_t x, size_t y, double brightness, size_t diag_len,  doubl
     }
 }
 
+void normalizeImage(Mat *image) {
+
+    /* get image size parameters */
+    const size_t img_width = image->width;
+    const size_t img_height = image->height;
+    const size_t pixel_count = img_height * img_width;
+
+    double max = 0.0;
+
+    /* calculate brightness for all pixels & find the brightest pixel */
+    size_t i;
+    for (i = 0; i < pixel_count; i++)
+    {
+        max = (image->data[i] > max) ? image->data[i] : max;
+    }
+
+    const double ALPHA = (MAX_BRIGHTNESS / max);
+
+    for (i = 0; i < pixel_count; i++)
+    {
+        image->data[i] = (image->data[i] * ALPHA);
+    }
+}
+
 Mat HoughTransform(Mat *grayscale_img) {
 
     size_t i;
@@ -49,7 +74,7 @@ Mat HoughTransform(Mat *grayscale_img) {
     const size_t diagonal_length = (size_t) hypot(img_height, img_width);
 
     /* initialize output matrix with parameters */
-    const size_t width  = 180;
+    const size_t width = 180;
     const size_t height = 2 * diagonal_length;
 
     printf("hough image length:%lu, %lu\n", diagonal_length, width);
@@ -66,85 +91,12 @@ Mat HoughTransform(Mat *grayscale_img) {
         {
             const size_t y = (i / img_width);
             const size_t x = (i % img_width);
-            performHough(x, y, (MAX_BRIGHTNESS-pixel_value), diagonal_length, houghMatrix.data);
+            performHough(x, y, pixel_value, diagonal_length, houghMatrix.data);
         }
     }
+    normalizeImage(&houghMatrix);
+    //edgeDetect(&houghMatrix, 1.0, 0.0, 0.0, 1.0);
     return houghMatrix;
-}
-
-//Mat color2gray(Bitmap *image) {
-//
-//    size_t i;
-//    const size_t width = image->width;
-//    const size_t height = image->height;
-//
-//    double most_bright_pixel = MIN_BRIGHTNESS;
-//    const size_t pixel_count = (width * height);
-//
-//    Mat grayImage = createMatrix(width, height, 0);
-//
-//    /* calculate brightness for all pixels & find the brightest pixel */
-//    for(i = 0; i < pixel_count; i++)
-//    {
-//        size_t idx = 3*i;
-//        const double R = image->data[idx++];  // 3i + 0
-//        const double G = image->data[idx++];  // 3i + 1
-//        const double B = image->data[idx];    // 3i + 2
-//
-//        /* store image magnitude in gray image mat */
-//        grayImage.data[i] = sqrt((R*R) + (G*G) + (B*B));
-//
-//        /* find the brightest pixel */
-//        most_bright_pixel = (grayImage.data[i] > most_bright_pixel) ? grayImage.data[i] : most_bright_pixel;
-//    }
-//
-//    /** calculate normalization factor alpha **/
-//    if(NORMALIZE_ALPHA)
-//    {
-//        const double ALPHA = (MAX_BRIGHTNESS / most_bright_pixel);
-//        for (i = 0; i < pixel_count; i++)
-//        {
-//            grayImage.data[i] = MAX_BRIGHTNESS - (grayImage.data[i] * ALPHA);
-//            if(VERBOSE) printf("gray:%f\n", grayImage.data[i]);
-//        }
-//    }
-//
-//    return grayImage;
-//}
-Mat color2gray(unsigned char *image_data) {
-
-    Mat grayImage = createMatrix((size_t) InfoHeader.Width, (size_t) InfoHeader.Height, 0);
-    const size_t pixel_count = grayImage.width * grayImage.height;
-    double most_bright_pixel = 0.0;
-
-    /* calculate brightness for all pixels & find the brightest pixel */
-    size_t i;
-    for(i = 0; i < pixel_count; i++)
-    {
-        const size_t idx = 3*i;
-        const double R = (double)((unsigned char) image_data[idx]);     // 3i + 0
-        const double G = (double)((unsigned char) image_data[idx+1]); // 3i + 1
-        const double B = (double)((unsigned char) image_data[idx+2]); // 3i + 2
-
-        /* store image magnitude in gray image mat */
-        grayImage.data[i] = sqrt((R*R) + (G*G) + (B*B));
-
-        /* find the brightest pixel */
-        most_bright_pixel = (grayImage.data[i] > most_bright_pixel) ? grayImage.data[i] : most_bright_pixel;
-    }
-
-    /** calculate normalization factor alpha **/
-    if(NORMALIZE_ALPHA)
-    {
-        const double ALPHA = (MAX_BRIGHTNESS / most_bright_pixel);
-        for (i = 0; i < pixel_count; i++)
-        {
-            grayImage.data[i] = MAX_BRIGHTNESS - (grayImage.data[i] * ALPHA);
-            if(VERBOSE) printf("gray:%f\n", grayImage.data[i]);
-        }
-    }
-
-    return grayImage;
 }
 
 int cmpfunc (const void * a, const void * b)
@@ -279,44 +231,99 @@ unsigned int find_next_max(Mat *image) {
     return idx_max;
 }
 
+double getPolygonOrientation(Mat *image){
+    return -1;
+}
+
+void getPolygonSideLengths(Mat *image, double *out_array) {
+
+}
+
+/** HoughMat is the input here where width = 180 & height = 2 * diagonal distance **/
 unsigned int getPolygonEdgeCount(Mat *image){
 
     const size_t height = image->height;
-    const size_t width = image->width;
-    const double *data = image->data;
+    const size_t width  = image->width;
+    double *data  = image->data;
 
     const size_t pixel_count = width * height;
-    const size_t kernel_size = 20;//(size_t) sqrt(pixel_count) / 10;
-    const size_t hlf_krnl = kernel_size/2;
-    size_t x, y;
-    double current_max;
-    double running_max_avg = 0;
-    size_t num_max_found = 0;
 
-//    while(num_max_found++ != 4) {
+    unsigned int numLocalMaxima = 0;
+    size_t x,y;
+
+    for(x = 0; x < width; x++)
+    {
+        for(y = 0; y < height; y++)
+        {
+            const size_t idx = (y * width) + x;
+            const size_t eastPoint = (x == width - 1) ? ((y * width) + 0) : ((y * width) + x + 1);
+            const size_t westPoint = (x == 0) ? ((y * width) + (width - 1)) : ((y * width) + x - 1);
+            const size_t northPoint = (y == height - 1) ? idx : (((y+1) * width) + x);
+            const size_t southPoint = (y == 0) ? x : (((y-1)*width) + x);
+
+            const size_t northEastPoint = northPoint + 1 ;//(x == width - 1) ? ((y * width) + 0) : ((y * width) + x + 1);
+            const size_t northWestPoint = northPoint - 1 ;
+            const size_t southEastPoint = southPoint + 1 ;
+            const size_t southWestPoint = southPoint - 1 ;
+
+            if(data[idx] < MAX_BRIGHTNESS * 0.75)
+                data[idx] = 0.0;
+
+            else if(data[idx] >= data[eastPoint] && data[idx] >= data[westPoint] && data[idx] >= data[northPoint] &&
+                    data[idx] >= data[southPoint] && data[idx] >= data[southWestPoint] &&
+                    data[idx] >= data[southEastPoint] && data[idx] >= data[northWestPoint] && data[idx] >= data[northEastPoint])
+            {
+                printf("found local maxima at idx:%lu, value is: %f\n", idx, data[idx]);
+                numLocalMaxima++;
+
+                data[eastPoint] = 0.0;
+                data[northPoint] = 0.0;
+
+                data[westPoint] = 0.0;
+                data[southPoint] = 0.0;
+
+                data[southEastPoint] = 0.0;
+                data[southWestPoint] = 0.0;
+
+                data[northEastPoint] = 0.0;
+                data[northWestPoint] = 0.0;
+
+                //data[idx] = 255.0;
+            }
+        }
+    }
+//    const size_t kernel_size = 20;//(size_t) sqrt(pixel_count) / 10;
+//    const size_t hlf_krnl = kernel_size/2;
+//    size_t x, y;
+//    double current_max;
+//    double running_max_avg = 0;
+//    size_t num_max_found = 0;
+//
+////    while(num_max_found++ != 4) {
+////        const unsigned int idx = find_next_max(image);
+////        current_max = image->data[idx];
+////        mask_image(image, idx, 20);
+////    }
+//    printf("setting kernel size to :%lu\n", height/16);
+//
+//    while(1)
+//    {
 //        const unsigned int idx = find_next_max(image);
 //        current_max = image->data[idx];
-//        mask_image(image, idx, 20);
+//        mask_image(image, idx, height/8);
+//
+//        //image->data[idx] = 0.0;
+//        if(current_max >= (0.87 * running_max_avg))
+//        {
+//            running_max_avg = ((running_max_avg * num_max_found++) + current_max) / num_max_found;
+//            printf("running_max_avg:%f, num_max_found:%lu, curr_max:%f\n", running_max_avg, num_max_found, current_max);
+//        }
+//        else
+//            break;
 //    }
-    printf("setting kernel size to :%lu\n", height/16);
 
-    while(1)
-    {
-        const unsigned int idx = find_next_max(image);
-        current_max = image->data[idx];
-        mask_image(image, idx, height/8);
-
-        //image->data[idx] = 0.0;
-        if(current_max >= (0.87 * running_max_avg))
-        {
-            running_max_avg = ((running_max_avg * num_max_found++) + current_max) / num_max_found;
-            printf("running_max_avg:%f, num_max_found:%lu, curr_max:%f\n", running_max_avg, num_max_found, current_max);
-        }
-        else
-            break;
-    }
-
-    return num_max_found;
+    return numLocalMaxima;
+}
 //
 //    printf("Since pixel_count is %lu, kernel size is :%lu\n", pixel_count, kernel_size);
 //
@@ -350,13 +357,43 @@ unsigned int getPolygonEdgeCount(Mat *image){
 //    }
 //    //printf("max:%f, sum:%f, mean:%f, median:%f, count:%d\n", max, sum, mean, median, count);
 //    return count;
-}
-double getPolygonOrientation(Mat *image){
-    return -1;
-}
-
-void getPolygonSideLengths(Mat *image, double *out_array) {
-
-}
-
 #endif //HOUGHTRANSFORM_HOUGH_H
+//Mat color2gray(Bitmap *image) {
+//
+//    size_t i;
+//    const size_t width = image->width;
+//    const size_t height = image->height;
+//
+//    double most_bright_pixel = MIN_BRIGHTNESS;
+//    const size_t pixel_count = (width * height);
+//
+//    Mat grayImage = createMatrix(width, height, 0);
+//
+//    /* calculate brightness for all pixels & find the brightest pixel */
+//    for(i = 0; i < pixel_count; i++)
+//    {
+//        size_t idx = 3*i;
+//        const double R = image->data[idx++];  // 3i + 0
+//        const double G = image->data[idx++];  // 3i + 1
+//        const double B = image->data[idx];    // 3i + 2
+//
+//        /* store image magnitude in gray image mat */
+//        grayImage.data[i] = sqrt((R*R) + (G*G) + (B*B));
+//
+//        /* find the brightest pixel */
+//        most_bright_pixel = (grayImage.data[i] > most_bright_pixel) ? grayImage.data[i] : most_bright_pixel;
+//    }
+//
+//    /** calculate normalization factor alpha **/
+//    if(NORMALIZE_ALPHA)
+//    {
+//        const double ALPHA = (MAX_BRIGHTNESS / most_bright_pixel);
+//        for (i = 0; i < pixel_count; i++)
+//        {
+//            grayImage.data[i] = MAX_BRIGHTNESS - (grayImage.data[i] * ALPHA);
+//            if(VERBOSE) printf("gray:%f\n", grayImage.data[i]);
+//        }
+//    }
+//
+//    return grayImage;
+//}

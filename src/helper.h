@@ -5,6 +5,7 @@
 #ifndef HOUGHTRANSFORM_HELPER_H
 #define HOUGHTRANSFORM_HELPER_H
 
+#include "bmp.h"
 
 typedef struct
 {
@@ -13,6 +14,11 @@ typedef struct
     double *data;
 } Mat;
 
+/**
+ * Writes the @typedef Mat datatype to CSV
+ * @param name
+ * @param imageMap
+ */
 void writeMat_toCSV(char* name, Mat imageMap) {
 
     FILE *MATout = fopen(name, "w");
@@ -39,6 +45,13 @@ void writeMat_toCSV(char* name, Mat imageMap) {
 
 }
 
+/**
+ * Allocates memory for writing to a @typedef Mat. Memory can be zeroed out based on needs.
+ * @param width
+ * @param height
+ * @param zeroed
+ * @return
+ */
 Mat createMatrix(const size_t width, const size_t height, const unsigned int zeroed) {
 
     Mat newMatrix;
@@ -47,7 +60,7 @@ Mat createMatrix(const size_t width, const size_t height, const unsigned int zer
 
     const size_t pixel_count = width * height;
 
-    newMatrix.data = malloc(pixel_count * sizeof(double));
+    newMatrix.data = m_malloc(pixel_count * sizeof(double));
 
     if (newMatrix.data == NULL)
     {
@@ -69,8 +82,64 @@ Mat createMatrix(const size_t width, const size_t height, const unsigned int zer
     return newMatrix;
 }
 
+/**
+ * Free all memory associated with the @typedef Mat object
+ * @param toDestroy
+ */
 void destroyMatrix(Mat *toDestroy) {
-    free(toDestroy->data);
+    m_free(toDestroy->data);
 }
 
+/**
+ * Reads in a BMP file and outputs a @typedef Mat datatype, normalizing the matrix magnitudes if option is enabled
+ * @param image_data
+ * @return
+ */
+Mat color2gray(unsigned char *image_data) {
+
+    Mat grayImage = createMatrix((size_t) InfoHeader.Width, (size_t) InfoHeader.Height, 0);
+    const size_t pixel_count = grayImage.width * grayImage.height;
+    double most_bright_pixel = 0.0;
+
+    /* calculate brightness for all pixels & find the brightest pixel */
+    size_t i;
+    for(i = 0; i < pixel_count; i++)
+    {
+        const size_t idx = 3*i;
+        const double R = (double)((unsigned char) image_data[idx]);     // 3i + 0
+        const double G = (double)((unsigned char) image_data[idx+1]); // 3i + 1
+        const double B = (double)((unsigned char) image_data[idx+2]); // 3i + 2
+
+        /* store image magnitude in gray image mat */
+        grayImage.data[i] = hypot(R, hypot(G, B));
+
+        /* find the brightest pixel */
+        most_bright_pixel = (grayImage.data[i] > most_bright_pixel) ? grayImage.data[i] : most_bright_pixel;
+    }
+
+    /** calculate normalization factor alpha **/
+    if(NORMALIZE_ALPHA)
+    {
+        const double ALPHA = (MAX_BRIGHTNESS / most_bright_pixel);
+        for (i = 0; i < pixel_count; i++)
+        {
+            grayImage.data[i] = MAX_BRIGHTNESS - (grayImage.data[i] * ALPHA);
+            if(VERBOSE) printf("gray:%f\n", grayImage.data[i]);
+        }
+    }
+
+    return grayImage;
+}
+
+/**
+ * Performs the same work as @fn color2gray, but ensures that BMP related memory is freed once the matrix has been created
+ * @param name
+ * @return
+ */
+Mat imreadGray(char* name) {
+    unsigned char *BMPin = imread(name);
+    Mat grayMatrix = color2gray(BMPin);
+    m_free(BMPin);
+    return grayMatrix;
+}
 #endif //HOUGHTRANSFORM_HELPER_H
