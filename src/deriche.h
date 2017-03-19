@@ -27,51 +27,16 @@ typedef struct {
 
 Mat dericheFilter(const Mat *image, const DericheCoeffs *coeffs) {
 
-    const size_t height = image->height;
-    const size_t width  = image->width;
+    const int height = (int)(image->height);
+    const int width  = (int)(image->width);
 
-    const size_t pixel_count = width * height;
+    const int pixel_count = width * height;
 
-    Mat y1 = createMatrix(image->width, image->height, 0);
-    Mat y2 = createMatrix(image->width, image->height, 0);
+    Mat y1  = createMatrix(image->width, image->height, 0);
+    Mat y2  = createMatrix(image->width, image->height, 0);
     Mat out = createMatrix(image->width, image->height, 0);
 
     int x, y;
-    for(y = 0; y < height; y++)
-    {
-        /** LEFT to RIGHT iteration **/
-        for (x = 0; x < width; x++)
-        {
-            const size_t row = y * width;
-            const size_t idx = row + x;
-            const double xL_0 = image->data[idx];
-            const double xL_1 = (x >= 1) ? image->data[idx - 1] : 0.0;
-            const double yL_2 = (x >= 2) ? y1.data[idx - 2] : 0.0;
-            const double yL_1 = (x >= 1) ? y1.data[idx - 1] : 0.0;
-            y1.data[idx] = (coeffs->a1 * xL_0) + (coeffs->a2 * xL_1) + (coeffs->b1 * yL_1) + (coeffs->b2 * yL_2);
-        }
-
-        /** RIGHT to LEFT iteration **/
-        for(x = (int)(width-1); x >= 0; --x)
-        {
-            const size_t row = y * width;
-            const size_t idx = row + x;
-            const double xR_2 = (width-x >= 2) ? image->data[idx + 2] : 0.0;
-            const double xR_1 = (width-x >= 1) ? image->data[idx + 1] : 0.0;
-            const double yR_2 = (width-x >= 2) ? y2.data[idx + 2] : 0.0;
-            const double yR_1 = (width-x >= 1) ? y2.data[idx + 1] : 0.0;
-            y2.data[idx] = (coeffs->a3 * xR_1) + (coeffs->a4 * xR_2) + (coeffs->b1 * yR_1) + (coeffs->b2 * yR_2);
-        }
-
-    }
-
-    size_t k;
-    for(k = 0; k < pixel_count; k++)
-    {
-        out.data[k] = (coeffs->c1) * (y1.data[k] + y2.data[k]);
-    }
-
-
     for(x = 0; x < width; x++)
     {
         /** TOP to BOTTOM iteration **/
@@ -83,11 +48,11 @@ Mat dericheFilter(const Mat *image, const DericheCoeffs *coeffs) {
             const double xL_0 = image->data[idx];
             const double yL_2 = (y >= 2) ? y1.data[idx - 2*width] : 0.0;
             const double yL_1 = (y >= 1) ? y1.data[idx - 1*width] : 0.0;
-            y1.data[idx] = (coeffs->a1 * xL_0) + (coeffs->a2 * xL_1) + (coeffs->b1 * yL_1) + (coeffs->b2 * yL_2);
+            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0))));
         }
 
         /** BOTTOM to TOP iteration **/
-        for(y = (int)(height-1); y >= 0; --y)
+        for(y = (height-1); y >= 0; --y)
         {
             const size_t row = y * width;
             const size_t idx = row + x;
@@ -95,14 +60,48 @@ Mat dericheFilter(const Mat *image, const DericheCoeffs *coeffs) {
             const double xR_1 = (height-y >= 1) ? image->data[idx + 1*width] : 0.0;
             const double yR_2 = (height-y >= 2) ? y2.data[idx + 2*width] : 0.0;
             const double yR_1 = (height-y >= 1) ? y2.data[idx + 1*width] : 0.0;
-            y2.data[idx] = (coeffs->a3 * xR_1) + (coeffs->a4 * xR_2) + (coeffs->b1 * yR_1) + (coeffs->b2 * yR_2);
+            y2.data[idx] =  fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0))));
+        }
+
+    }
+
+    int k;
+    for(k = 0; k < pixel_count; k++)
+    {
+        out.data[k] = fma(coeffs->c1, (y1.data[k] + y2.data[k]), 0);  //(coeffs->c1) * (y1.data[k] + y2.data[k]);
+    }
+
+    for(y = 0; y < height; y++)
+    {
+        /** LEFT to RIGHT iteration **/
+        for (x = 0; x < width; x++)
+        {
+            const size_t row  = y * width;
+            const size_t idx  = row + x;
+            const double xL_0 = image->data[idx];
+            const double xL_1 = (x >= 1) ? image->data[idx - 1] : 0.0;
+            const double yL_2 = (x >= 2) ? y1.data[idx - 2]     : 0.0;
+            const double yL_1 = (x >= 1) ? y1.data[idx - 1]     : 0.0;
+            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0))));
+        }
+
+        /** RIGHT to LEFT iteration **/
+        for(x = (width-1); x >= 0; --x)
+        {
+            const size_t row  = y * width;
+            const size_t idx  = row + x;
+            const double xR_2 = (width-x >= 2) ? image->data[idx + 2] : 0.0;
+            const double xR_1 = (width-x >= 1) ? image->data[idx + 1] : 0.0;
+            const double yR_2 = (width-x >= 2) ? y2.data[idx + 2]     : 0.0;
+            const double yR_1 = (width-x >= 1) ? y2.data[idx + 1]     : 0.0;
+            y2.data[idx] =  fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0))));
         }
 
     }
 
     for(k = 0; k < pixel_count; k++)
     {
-        out.data[k] = (coeffs->c2) * (y1.data[k] + y2.data[k]);
+        out.data[k] = fma(coeffs->c2, (y1.data[k] + y2.data[k]), 0);//(coeffs->c2) * (y1.data[k] + y2.data[k]);
     }
 
     destroyMatrix(&y1);
@@ -424,24 +423,22 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
 
 Mat dericheBlur(const Mat *image, const double ALPHA) {
 
-    const double k_numerator = (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
-    const double k_denominator = 1.0 + (2.0 * ALPHA * exp(-1.0 * ALPHA)) - exp(-2.0 * ALPHA);
-    const double k = k_numerator/k_denominator;
+    const double k = (cosh(ALPHA) - 1.0f)/(ALPHA + sinh(ALPHA));
 
     /** Prepare co-efficients for blurring pass **/
     DericheCoeffs blurCoeffs;
     blurCoeffs.a1 = k;
-    blurCoeffs.a2 = k * exp(-1.0 * ALPHA) * (ALPHA - 1.0);
-    blurCoeffs.a3 = k * exp(-1.0 * ALPHA) * (ALPHA + 1.0);
-    blurCoeffs.a4 = -1.0 * k * exp(-2.0 * ALPHA);
+    blurCoeffs.a2 = k * exp(-1.0f * ALPHA) * (ALPHA - 1.0f);
+    blurCoeffs.a3 = k * exp(-1.0f * ALPHA) * (ALPHA + 1.0f);
+    blurCoeffs.a4 = -1.0f * k * exp(-2.0f * ALPHA);
     blurCoeffs.a5 = blurCoeffs.a1;
     blurCoeffs.a6 = blurCoeffs.a2;
     blurCoeffs.a7 = blurCoeffs.a3;
     blurCoeffs.a8 = blurCoeffs.a4;
-    blurCoeffs.b1 = 2.0 * exp(-1.0 * ALPHA);
-    blurCoeffs.b2 = -1.0 * exp(-2.0 * ALPHA);
-    blurCoeffs.c1 = 1.0;
-    blurCoeffs.c2 = 1.0;
+    blurCoeffs.b1 =  2.0f * exp(-1.0f * ALPHA);
+    blurCoeffs.b2 = -1.0f * exp(-2.0f * ALPHA);
+    blurCoeffs.c1 = 1.0f;
+    blurCoeffs.c2 = 1.0f;
 
     /** perform smoooting  **/
     Mat blurred = dericheFilter(image, &blurCoeffs);
@@ -491,7 +488,7 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
 
 
     /** perform x-derivative **/
-    Mat xGradient = dericheFilter(image, &xDerivativeCoeffs);
+   // Mat xGradient = dericheFilter(image, &xDerivativeCoeffs);
 
     /** Prepare co-efficients for x-derivative pass **/
     DericheCoeffs yDerivativeCoeffs;
@@ -509,14 +506,14 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
     yDerivativeCoeffs.c2 = xDerivativeCoeffs.c1;
 
     /** perform x-derivative **/
-    Mat yGradient = dericheFilter(image, &yDerivativeCoeffs);
+   // Mat yGradient = dericheFilter(image, &yDerivativeCoeffs);
 
-    getGradient(&xGradient, &yGradient, image);
+    //getGradient(&xGradient, &yGradient, image);
 
-    if(LOW_HYS >= 1 && HIGH_HYS >=1) hysteresisThreshold(image, LOW_HYS, HIGH_HYS);
+//    if(LOW_HYS >= 1 && HIGH_HYS >=1) hysteresisThreshold(image, LOW_HYS, HIGH_HYS);
 
-    destroyMatrix(&yGradient);
-    destroyMatrix(&xGradient);
+  //  destroyMatrix(&yGradient);
+   // destroyMatrix(&xGradient);
 }
 
 

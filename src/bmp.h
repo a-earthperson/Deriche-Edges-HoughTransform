@@ -44,6 +44,10 @@ unsigned char* imread(char* name)
     fread(&Header, sizeof(Header), 1, BMP_in);
     fread(&InfoHeader, sizeof(InfoHeader), 1, BMP_in);
 
+    /** setting height and width to abs values since this breaks on linux and mac os machines **/
+    InfoHeader.Width = abs(InfoHeader.Width);
+    InfoHeader.Height = abs(InfoHeader.Height);
+
 
     printf("size of Header = %d\n", sizeof(Header));
     printf("size of InfoHeader = %d\n", sizeof(InfoHeader));
