@@ -23,9 +23,16 @@ typedef struct {
     double b2;
     double c1;
     double c2;
+} Coeffs;
+
+typedef struct {
+    Coeffs blur;
+    Coeffs xGradient;
+    Coeffs yGradient;
 } DericheCoeffs;
 
-Mat dericheFilter(const Mat *image, const DericheCoeffs *coeffs) {
+
+Mat applyDericheFilter(Mat *image, const Coeffs *coeffs) {
 
     const int height = (int)(image->height);
     const int width  = (int)(image->width);
@@ -101,11 +108,30 @@ Mat dericheFilter(const Mat *image, const DericheCoeffs *coeffs) {
 
     for(k = 0; k < pixel_count; k++)
     {
-        out.data[k] = fma(coeffs->c2, (y1.data[k] + y2.data[k]), 0);//(coeffs->c2) * (y1.data[k] + y2.data[k]);
+        out.data[k] = hypot(fma(coeffs->c2, (y1.data[k] + y2.data[k]), 0), out.data[k]);
+        //out.data[k] = fma(coeffs->c2, (y1.data[k] + y2.data[k]), out.data[k]);//(coeffs->c2) * (y1.data[k] + y2.data[k]);
     }
 
     destroyMatrix(&y1);
     destroyMatrix(&y2);
+
+    return out;
+}
+
+GradMat getGradientMat(Mat *Gradx, Mat *Grady) {
+
+    GradMat out = createGradMatrix(Gradx->width, Gradx->height);
+
+    const int height = (int)(Gradx->height);
+    const int width  = (int)(Gradx->width);
+    const int pixel_count = width * height;
+
+    int k;
+    for(k = 0; k < pixel_count; k++)
+    {
+        out.mag[k] = hypot(Gradx->data[k],Grady->data[k]);
+        out.dir[k] = atan2(Gradx->data[k],Grady->data[k]);
+    }
 
     return out;
 }
@@ -122,6 +148,8 @@ void getGradient(Mat *Gradx, Mat *Grady, Mat*image) {
 
     const size_t pixel_count = width * height;
 
+    int prev_gradient_direction_quadrant = -1;
+
     for (int i = 1; i < width - 1; i++)
     {
         for (int j = 1; j < height - 1; j++)
@@ -136,220 +164,64 @@ void getGradient(Mat *Gradx, Mat *Grady, Mat*image) {
             const int sw = ss + 1;
             const int se = ss - 1;
 
-            const double G_c  = hypot(Gradx->data[c], Grady->data[c]);
-//            const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
-//            const double G_ww = hypot(Gradx->data[ww], Grady->data[ww]);
-//            const double G_nw = hypot(Gradx->data[nw], Grady->data[nw]);
-//            const double G_nn = hypot(Gradx->data[nn], Grady->data[nn]);
-//            const double G_ne = hypot(Gradx->data[ne], Grady->data[ne]);
-//            const double G_se = hypot(Gradx->data[se], Grady->data[se]);
-//            const double G_ss = hypot(Gradx->data[ss], Grady->data[ss]);
-//            const double G_sw = hypot(Gradx->data[sw], Grady->data[sw]);
+            const double G_c = hypot(Gradx->data[c], Grady->data[c]);
+            //const double G_d = atan2(Gradx->data[c], Grady->data[c]);
 
-            image->data[c] = (G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
-            continue;
+            //int direction_quadrant;
+//
+//            if(G_d >= 0.0 && G_d <= M_PI_2)
+//                direction_quadrant = 0;
+//
+//            else if(G_d >= M_PI_2  && G_d <= M_PI)
+//                direction_quadrant = 1;
+//
+//            else if(G_d >= M_PI  && G_d <= (M_PI + M_PI_2))
+//                direction_quadrant = 2;
+//
+//            else if(G_d >= M_PI  && G_d <= (M_PI + M_PI_2))
+//                direction_quadrant = 3;
+
+            //printf("%lu :: hypot: %f, atan2: %f, direction: %lu, prev:%lu\n", c, G_c, G_d, direction_quadrant, prev_gradient_direction_quadrant);
+            //const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
+
+            image->data[c] = ((G_c >= MAGNITUDE_LIMIT)) ? MAGNITUDE_LIMIT : 0.0;//(G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
+
+           // prev_gradient_direction_quadrant = direction_quadrant;
+
+
+            //printf("%lu :: hypot: %f, direction: %f\n", c, G_c, G_d);
+            const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
+            const double G_ww = hypot(Gradx->data[ww], Grady->data[ww]);
+            const double G_nw = hypot(Gradx->data[nw], Grady->data[nw]);
+            const double G_nn = hypot(Gradx->data[nn], Grady->data[nn]);
+            const double G_ne = hypot(Gradx->data[ne], Grady->data[ne]);
+            const double G_se = hypot(Gradx->data[se], Grady->data[se]);
+            const double G_ss = hypot(Gradx->data[ss], Grady->data[ss]);
+            const double G_sw = hypot(Gradx->data[sw], Grady->data[sw]);
+
+            //image->data[c] = (G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
+          //  continue;
             const float dir = (float) (fmod(atan2(Grady->data[c], Gradx->data[c]) + M_PI, M_PI) / M_PI) * 8;
-//
-//            if (((dir <= 1 || dir > 7) && G_c > G_ee && G_c > G_ww) || // 0 deg
-//                ((dir > 1 && dir <= 3) && G_c > G_nw && G_c > G_se) || // 45 deg
-//                ((dir > 3 && dir <= 5) && G_c > G_nn && G_c > G_ss) || // 90 deg
-//                ((dir > 5 && dir <= 7) && G_c > G_ne && G_c > G_sw))   // 135 deg
-//
-//                image->data[c] = G_c;
-//            else
-//                image->data[c] = 0.0;
-//
 
+//            if(G_c >= MAGNITUDE_LIMIT)
+//            {
+//                image->data[c] = MAGNITUDE_LIMIT;
+//            }
+            if (G_c >= MAGNITUDE_LIMIT)
+            {
+                if (((dir <= 1 || dir > 7) && G_c > G_ee && G_c > G_ww) || // 0 deg
+                    ((dir > 1 && dir <= 3) && G_c > G_nw && G_c > G_se) || // 45 deg
+                    ((dir > 3 && dir <= 5) && G_c > G_nn && G_c > G_ss) || // 90 deg
+                    ((dir > 5 && dir <= 7) && G_c > G_ne && G_c > G_sw))   // 135 deg
+
+                    image->data[c] = G_c;//MAGNITUDE_LIMIT;
+                else
+                    image->data[c] = 0.0;
+            }
+            else
+                image->data[c] = 0.0;
         }
     }
-//    size_t x,y;
-//
-//    for(x = 1; x < width-1; x++)
-//    {
-//        for (y = 1; y < height - 1; y++)
-//        {
-//            size_t idx = (y * width) + x;
-//
-//            int dx = (Gradx->data[idx] > 0) ? 1 : -1;
-//            int dy = (Grady->data[idx] > 0) ? 1 : -1;
-//
-//            size_t a1_offset, b1_offset;
-//
-//            double first, second;
-//
-//            if (abs((int) Gradx->data[idx]) > abs((int) Grady->data[idx]))
-//            {
-//                a1_offset = (x + dx) + ((y + 00) * width);
-//                b1_offset = (x - dx) + ((y + 00) * width);
-//
-//                first = Gradx->data[idx];
-//                second = Grady->data[idx];
-//            } else
-//            {
-//                a1_offset = (x + 00) + ((y - dy) * width);
-//                b1_offset = (x + 00) + ((y + dy) * width);
-//
-//                first = Grady->data[idx];
-//                second = Gradx->data[idx];
-//            }
-//
-//            size_t a2_offset = (x + dx) + ((y - dy) * width);
-//            size_t b2_offset = (x - dx) + ((y + dy) * width);
-//
-//            const double a1 = hypot(Gradx->data[a1_offset], Grady->data[a1_offset]);
-//            const double a2 = hypot(Gradx->data[a2_offset], Grady->data[a2_offset]);
-//            const double b1 = hypot(Gradx->data[b1_offset], Grady->data[b1_offset]);
-//            const double b2 = hypot(Gradx->data[b2_offset], Grady->data[b2_offset]);
-//
-//            const double A = (first) - a1 * (second) + a2 * (second);
-//            const double B = (first) - b1 * (second) + b2 * (second);
-//
-//            const double gradMag = hypot(Gradx->data[idx], Grady->data[idx]);
-//            const double P = gradMag * (first);
-//
-//            double val = (P >= A && P >= B) ? gradMag : 0;
-//
-//            image->data[idx] = val;//0xff000000 | ((int) (val) << 16 | (int) (val) << 8 | (int) (val));
-//            printf("graient:%f\n", image->data[idx]);
-//            //(gradMag >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
-//        }
-//    }
-            //double a1, a2, b1, b2, A, B, point, val;
-//
-//            const double yGrad = Grady->data[k];
-//            const double xGrad = Gradx->data[k];
-//            const double gradMag = hypot(xGrad, yGrad);
-//            const double gradOrientation = 2 * M_PI * atan2(yGrad, xGrad);
-//            if(diffx[x + (y * width)] > 0) dx = 1;
-//                    else dx = -1;
-//
-//                    if(diffy[x + (y * width)] > 0) dy = 1;
-//                    else dy = -1;
-//
-//                    int a1, a2, b1, b2, A, B, point, val;
-//                    if(Math.abs(diffx[x + (y * width)]) > Math.abs(diffy[x + (y * width)]))
-//                    {
-//                        a1 = mag[(x+dx) + ((y) * width)];
-//                        a2 = mag[(x+dx) + ((y-dy) * width)];
-//                        b1 = mag[(x-dx) + ((y) * width)];
-//                        b2 = mag[(x-dx) + ((y+dy) * width)];
-//                        A = (Math.abs(diffx[x + (y * width)]) - Math.abs(diffy[x + (y * width)]))*a1 + Math.abs(diffy[x + (y * width)])*a2;
-//                        B = (Math.abs(diffx[x + (y * width)]) - Math.abs(diffy[x + (y * width)]))*b1 + Math.abs(diffy[x + (y * width)])*b2;
-//                        point = mag[x + (y * width)] * Math.abs(diffx[x + (y * width)]);
-//                        if(point >= A && point > B) {
-//                            val = Math.abs(diffx[x + (y * width)]);
-//                            output[x + (y * width)] = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
-//                        }
-//                        else {
-//                            val = 0;
-//                            output[x + (y * width)] = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
-//                        }
-//                    }
-//                    else
-//                    {
-//                        a1 = mag[(x) + ((y-dy) * width)];
-//                        a2 = mag[(x+dx) + ((y-dy) * width)];
-//                        b1 = mag[(x) + ((y+dy) * width)];
-//                        b2 = mag[(x-dx) + ((y+dy) * width)];
-//                        A = (Math.abs(diffy[x + (y * width)]) - Math.abs(diffx[x + (y * width)]))*a1 + Math.abs(diffx[x + (y * width)])*a2;
-//                        B = (Math.abs(diffy[x + (y * width)]) - Math.abs(diffx[x + (y * width)]))*b1 + Math.abs(diffx[x + (y * width)])*b2;
-//                        point = mag[x + (y * width)] * Math.abs(diffy[x + (y * width)]);
-//                        if(point >= A && point > B) {
-//                            val = Math.abs(diffy[x + (y * width)]);
-//                            output[x + (y * width)] = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
-//                        }
-//                        else {
-//                            val = 0;
-//                            output[x + (y * width)] = 0xff000000 | ((int)(val) << 16 | (int)(val ) << 8 | (int)(val));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    for(k = 0; k < pixel_count; k++)
-//    {
-//        const double yGrad = Grady->data[k];
-//        const double xGrad = Gradx->data[k];
-//
-//        const double gradOrientation = 2 * M_PI * atan2(yGrad, xGrad);
-//
-//
-//        image->data[k] = (gradMag >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
-//        //if(gradMag > 0.01)printf("ori:%f, mag: %f, x:%f, y:%f\n", gradOrientation, gradMag, xGrad, yGrad);
-//        continue;
-//        int indexN = k - width;
-//        int indexS = k + width;
-//        int indexW = k - 1;
-//        int indexE = k + 1;
-//        int indexNW = indexN - 1;
-//        int indexNE = indexN + 1;
-//        int indexSW = indexS - 1;
-//        int indexSE = indexS + 1;
-//
-//
-//        //perform non-maximal supression
-//        const double nMag = hypot(Gradx->data[indexN], Grady->data[indexN]);
-//        const double sMag = hypot(Gradx->data[indexS], Grady->data[indexS]);
-//        const double wMag = hypot(Gradx->data[indexW], Grady->data[indexW]);
-//        const double eMag = hypot(Gradx->data[indexE], Grady->data[indexE]);
-//        const double neMag = hypot(Gradx->data[indexNE], Grady->data[indexNE]);
-//        const double seMag = hypot(Gradx->data[indexSE], Grady->data[indexSE]);
-//        const double swMag = hypot(Gradx->data[indexSW], Grady->data[indexSW]);
-//        const double nwMag = hypot(Gradx->data[indexNW], Grady->data[indexNW]);
-//
-//        double tmp;
-//        /*
-//         * An explanation of what's happening here, for those who want
-//         * to understand the source: This performs the "non-maximal
-//         * supression" phase of the Canny edge detection in which we
-//         * need to compare the gradient magnitude to that in the
-//         * direction of the gradient; only if the value is a local
-//         * maximum do we consider the point as an edge candidate.
-//         *
-//         * We need to break the comparison into a number of different
-//         * cases depending on the gradient direction so that the
-//         * appropriate values can be used. To avoid computing the
-//         * gradient direction, we use two simple comparisons: first we
-//         * check that the partial derivatives have the same sign (1)
-//         * and then we check which is larger (2). As a consequence, we
-//         * have reduced the problem to one of four identical cases that
-//         * each test the central gradient magnitude against the values at
-//         * two points with 'identical support'; what this means is that
-//         * the geometry required to accurately interpolate the magnitude
-//         * of gradient function at those points has an identical
-//         * geometry (upto right-angled-rotation/reflection).
-//         *
-//         * When comparing the central gradient to the two interpolated
-//         * values, we avoid performing any divisions by multiplying both
-//         * sides of each inequality by the greater of the two partial
-//         * derivatives. The common comparand is stored in a temporary
-//         * variable (3) and reused in the mirror case (4).
-//         *
-//         */
-//        //image->data[k] = (gradMag >= MAGNITUDE_LIMIT) ? (1000.0) : ((100.0 * gradMag));
-//        if (xGrad * yGrad <= (double) 0 /*(1)*/
-//            ? abs(xGrad) >= abs(yGrad) /*(2)*/
-//            ? (tmp = abs(xGrad * gradMag)) >= abs(yGrad * neMag - (xGrad + yGrad) * eMag) /*(3)*/
-//                && tmp > abs(yGrad * swMag - (xGrad + yGrad) * wMag) /*(4)*/
-//              : (tmp = abs(yGrad * gradMag)) >= abs(xGrad * neMag - (yGrad + xGrad) * nMag) /*(3)*/
-//                && tmp > abs(xGrad * swMag - (yGrad + xGrad) * sMag) /*(4)*/
-//            : abs(xGrad) >= abs(yGrad) /*(2)*/
-//              ? (tmp = abs(xGrad * gradMag)) >= abs(yGrad * seMag + (xGrad - yGrad) * eMag) /*(3)*/
-//                && tmp > abs(yGrad * nwMag + (xGrad - yGrad) * wMag) /*(4)*/
-//              : (tmp = abs(yGrad * gradMag)) >= abs(xGrad * seMag + (yGrad - xGrad) * sMag) /*(3)*/
-//                && tmp > abs(xGrad * nwMag + (yGrad - xGrad) * nMag) /*(4)*/
-//                ) {
-//
-//            image->data[k] = (gradMag >= MAGNITUDE_LIMIT) ? (1000.0) : ((1000.0 * gradMag));
-//            //NOTE: The orientation of the edge is not employed by this
-//            //implementation. It is a simple matter to compute it at
-//            //this point as: Math.atan2(yGrad, xGrad);
-//        } else {
-//            image->data[k] = 0.0;
-//        }
-//    }
 }
 
 void hysteresisConnect(Mat *image, const size_t x, const size_t y, const int low) {
@@ -421,38 +293,18 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
     }
 }
 
-Mat dericheBlur(const Mat *image, const double ALPHA) {
+
+/**
+ * Generates deriche co-efficients from alpha
+ * @param alpha
+ * @return
+ */
+DericheCoeffs getDericheCoeffs(const double ALPHA) {
 
     const double k = (cosh(ALPHA) - 1.0f)/(ALPHA + sinh(ALPHA));
 
     /** Prepare co-efficients for blurring pass **/
-    DericheCoeffs blurCoeffs;
-    blurCoeffs.a1 = k;
-    blurCoeffs.a2 = k * exp(-1.0f * ALPHA) * (ALPHA - 1.0f);
-    blurCoeffs.a3 = k * exp(-1.0f * ALPHA) * (ALPHA + 1.0f);
-    blurCoeffs.a4 = -1.0f * k * exp(-2.0f * ALPHA);
-    blurCoeffs.a5 = blurCoeffs.a1;
-    blurCoeffs.a6 = blurCoeffs.a2;
-    blurCoeffs.a7 = blurCoeffs.a3;
-    blurCoeffs.a8 = blurCoeffs.a4;
-    blurCoeffs.b1 =  2.0f * exp(-1.0f * ALPHA);
-    blurCoeffs.b2 = -1.0f * exp(-2.0f * ALPHA);
-    blurCoeffs.c1 = 1.0f;
-    blurCoeffs.c2 = 1.0f;
-
-    /** perform smoooting  **/
-    Mat blurred = dericheFilter(image, &blurCoeffs);
-    return blurred;
-}
-
-void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIGH_HYS, const int BLUR) {
-
-    const double k_numerator = (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
-    const double k_denominator = 1.0 + (2.0 * ALPHA * exp(-1.0 * ALPHA)) - exp(-2.0 * ALPHA);
-    const double k = k_numerator/k_denominator;
-
-    /** Prepare co-efficients for blurring pass **/
-    DericheCoeffs blurCoeffs;
+    Coeffs blurCoeffs;
     blurCoeffs.a1 = k;
     blurCoeffs.a2 = k * exp(-1.0 * ALPHA) * (ALPHA - 1.0);
     blurCoeffs.a3 = k * exp(-1.0 * ALPHA) * (ALPHA + 1.0);
@@ -466,32 +318,23 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
     blurCoeffs.c1 = 1.0;
     blurCoeffs.c2 = 1.0;
 
-    if(BLUR)
-    {
-        /** perform smoooting  **/
-        dericheFilter(image, &blurCoeffs);
-    }
     /** Prepare co-efficients for x-derivative pass **/
-    DericheCoeffs xDerivativeCoeffs;
-    xDerivativeCoeffs.a1 = 0.0;
-    xDerivativeCoeffs.a2 = 1.0;
+    Coeffs xDerivativeCoeffs;
+    xDerivativeCoeffs.a1 =  0.0;
+    xDerivativeCoeffs.a2 =  1.0;
     xDerivativeCoeffs.a3 = -1.0;
-    xDerivativeCoeffs.a4 = 0.0;
+    xDerivativeCoeffs.a4 =  0.0;
     xDerivativeCoeffs.a5 = blurCoeffs.a1;
     xDerivativeCoeffs.a6 = blurCoeffs.a2;
     xDerivativeCoeffs.a7 = blurCoeffs.a3;
     xDerivativeCoeffs.a8 = blurCoeffs.a4;
     xDerivativeCoeffs.b1 = blurCoeffs.b1;
     xDerivativeCoeffs.b2 = blurCoeffs.b2;
-    xDerivativeCoeffs.c1 = -1.0 * k_numerator;
-    xDerivativeCoeffs.c2 = 1.0;
+    xDerivativeCoeffs.c1 = -1.0 * (1.0 - exp(-1.0 * ALPHA)) * (1.0 - exp(-1.0 * ALPHA));
+    xDerivativeCoeffs.c2 =  1.0;
 
-
-    /** perform x-derivative **/
-   // Mat xGradient = dericheFilter(image, &xDerivativeCoeffs);
-
-    /** Prepare co-efficients for x-derivative pass **/
-    DericheCoeffs yDerivativeCoeffs;
+    /** Prepare co-efficients for y-derivative pass **/
+    Coeffs yDerivativeCoeffs;
     yDerivativeCoeffs.a1 = xDerivativeCoeffs.a5;
     yDerivativeCoeffs.a2 = xDerivativeCoeffs.a6;
     yDerivativeCoeffs.a3 = xDerivativeCoeffs.a7;
@@ -505,15 +348,59 @@ void edgeDetect(Mat *image, const double ALPHA, const int LOW_HYS, const int HIG
     yDerivativeCoeffs.c1 = xDerivativeCoeffs.c2;
     yDerivativeCoeffs.c2 = xDerivativeCoeffs.c1;
 
-    /** perform x-derivative **/
-   // Mat yGradient = dericheFilter(image, &yDerivativeCoeffs);
+    DericheCoeffs coeffs;
+    coeffs.blur = blurCoeffs;
+    coeffs.xGradient = xDerivativeCoeffs;
+    coeffs.yGradient = yDerivativeCoeffs;
 
-    //getGradient(&xGradient, &yGradient, image);
+    return coeffs;
+}
 
-//    if(LOW_HYS >= 1 && HIGH_HYS >=1) hysteresisThreshold(image, LOW_HYS, HIGH_HYS);
+Mat edgeDetect(Mat *image, const Options filterOptions) {
 
-  //  destroyMatrix(&yGradient);
-   // destroyMatrix(&xGradient);
+    Mat blurredImage = *image;
+
+    /** Apply blur if option is set **/
+    if (filterOptions.ALPHA_BLUR > 0)
+    {
+        const DericheCoeffs dericheCoeffs = getDericheCoeffs(filterOptions.ALPHA_BLUR);
+        blurredImage = applyDericheFilter(image, &dericheCoeffs.blur);
+    }
+
+    /** Perform hysteresis thresholding **/
+    if(filterOptions.HYSTERESIS_THRESHOLD_LOW > 0 && filterOptions.HYSTERESIS_THRESHOLD_HIGH > 0)
+    {
+        hysteresisThreshold(&blurredImage, filterOptions.HYSTERESIS_THRESHOLD_LOW, filterOptions.HYSTERESIS_THRESHOLD_HIGH);
+    }
+
+    /** No gradient related operations will be performed **/
+    if(filterOptions.ALPHA_GRADIENT <= 0)
+    {
+        /** since blurred image will be returned, free image memory and return **/
+        if (filterOptions.ALPHA_BLUR > 0)
+        {
+            destroyMatrix(image);
+        }
+        return blurredImage;
+    }
+
+    /** Perform all gradient analysis including X, Y gradient & magnitude supression **/
+
+    const DericheCoeffs dericheCoeffs = getDericheCoeffs(filterOptions.ALPHA_GRADIENT);
+    Mat xGradient = applyDericheFilter(&blurredImage, &dericheCoeffs.xGradient);
+    Mat yGradient = applyDericheFilter(&blurredImage, &dericheCoeffs.yGradient);
+
+    getGradient(&xGradient, &yGradient, &blurredImage);
+
+    destroyMatrix(&yGradient);
+    destroyMatrix(&xGradient);
+
+    if (filterOptions.ALPHA_BLUR > 0)
+    {
+        destroyMatrix(image);
+    }
+
+    return blurredImage;
 }
 
 

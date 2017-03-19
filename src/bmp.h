@@ -59,7 +59,7 @@ unsigned char* imread(char* name)
     padding = (4 - ((InfoHeader.Width*3) % 4)) % 4 ;
     pad = malloc(padding*sizeof(unsigned char));
 
-    bitmap = m_malloc(datasize);
+    bitmap = malloc(datasize);
 
 
 

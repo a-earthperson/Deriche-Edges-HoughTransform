@@ -14,6 +14,23 @@ typedef struct
     double *data;
 } Mat;
 
+typedef struct
+{
+    size_t width;
+    size_t height;
+    double *mag;
+    double *dir;
+} GradMat;
+
+typedef struct
+{
+    double ALPHA_BLUR;
+    double ALPHA_GRADIENT;
+    double HYSTERESIS_THRESHOLD_LOW;
+    double HYSTERESIS_THRESHOLD_HIGH;
+} Options;
+
+
 /**
  * Writes the @typedef Mat datatype to CSV
  * @param name
@@ -46,6 +63,32 @@ void writeMat_toCSV(char* name, Mat imageMap) {
 }
 
 /**
+ * Allocates memory for writing to a @typedef GradMat.
+ * @param width
+ * @param height
+ * @return
+ */
+GradMat createGradMatrix(const size_t width, const size_t height) {
+
+    GradMat newMatrix;
+    newMatrix.width = width;
+    newMatrix.height = height;
+    const size_t pixel_count = width * height;
+
+    newMatrix.mag = malloc(pixel_count * sizeof(double));
+    newMatrix.dir = malloc(pixel_count * sizeof(double));
+
+    if (newMatrix.mag == NULL || newMatrix.dir == NULL)
+    {
+        printf("memory asked :%lu", pixel_count * sizeof(double));
+        perror("unable to allocate memory for matrix. exiting.");
+        exit(1);
+    }
+
+    return newMatrix;
+}
+
+/**
  * Allocates memory for writing to a @typedef Mat. Memory can be zeroed out based on needs.
  * @param width
  * @param height
@@ -60,7 +103,7 @@ Mat createMatrix(const size_t width, const size_t height, const unsigned int zer
 
     const size_t pixel_count = width * height;
 
-    newMatrix.data = m_malloc(pixel_count * sizeof(double));
+    newMatrix.data = malloc(pixel_count * sizeof(double));
 
     if (newMatrix.data == NULL)
     {
@@ -87,9 +130,17 @@ Mat createMatrix(const size_t width, const size_t height, const unsigned int zer
  * @param toDestroy
  */
 void destroyMatrix(Mat *toDestroy) {
-    m_free(toDestroy->data);
+    free(toDestroy->data);
 }
 
+/**
+ * Free all memory associated with the @typedef GradMat object
+ * @param toDestroy
+ */
+void destroyGradMatrix(GradMat *toDestroy) {
+    free(toDestroy->mag);
+    free(toDestroy->dir);
+}
 /**
  * Reads in a BMP file and outputs a @typedef Mat datatype, normalizing the matrix magnitudes if option is enabled
  * @param image_data
