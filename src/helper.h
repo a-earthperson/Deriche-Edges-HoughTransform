@@ -68,19 +68,19 @@ void writeMat_toCSV(char* name, Mat imageMap) {
  * @param height
  * @return
  */
-GradMat createGradMatrix(const size_t width, const size_t height) {
+GradMat createGradMatrix(const unsigned int width, const unsigned int height) {
 
     GradMat newMatrix;
-    newMatrix.width = width;
+    newMatrix.width  = width;
     newMatrix.height = height;
-    const size_t pixel_count = width * height;
+    const unsigned int pixel_count = width * height;
 
     newMatrix.mag = malloc(pixel_count * sizeof(double));
     newMatrix.dir = malloc(pixel_count * sizeof(double));
 
     if (newMatrix.mag == NULL || newMatrix.dir == NULL)
     {
-        printf("memory asked :%lu", pixel_count * sizeof(double));
+        printf("memory asked :%lu \n", pixel_count * sizeof(double));
         perror("unable to allocate memory for matrix. exiting.");
         exit(1);
     }

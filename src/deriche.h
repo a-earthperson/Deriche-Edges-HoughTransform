@@ -49,33 +49,28 @@ Mat applyDericheFilter(Mat *image, const Coeffs *coeffs) {
         /** TOP to BOTTOM iteration **/
         for (y = 0; y < height; y++)
         {
-            const size_t row = y * width;
-            const size_t idx = row + x;
-            const double xL_1 = (y >= 1) ? image->data[idx - 1*width] : 0.0;
+            const size_t row  = y * width;
+            const size_t idx  = row + x;
             const double xL_0 = image->data[idx];
-            const double yL_2 = (y >= 2) ? y1.data[idx - 2*width] : 0.0;
-            const double yL_1 = (y >= 1) ? y1.data[idx - 1*width] : 0.0;
-            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0))));
+            const double xL_1 = (y >= 1) ? image->data[idx - (1 * width)] : 0.0f;
+            const double yL_2 = (y >= 2) ?     y1.data[idx - (2 * width)] : 0.0f;
+            const double yL_1 = (y >= 1) ?     y1.data[idx - (1 * width)] : 0.0f;
+            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0.0f))));
         }
 
         /** BOTTOM to TOP iteration **/
-        for(y = (height-1); y >= 0; --y)
+        for(y = (height - 1); y >= 0; --y)
         {
             const size_t row = y * width;
             const size_t idx = row + x;
-            const double xR_2 = (height-y >= 2) ? image->data[idx + 2*width] : 0.0;
-            const double xR_1 = (height-y >= 1) ? image->data[idx + 1*width] : 0.0;
-            const double yR_2 = (height-y >= 2) ? y2.data[idx + 2*width] : 0.0;
-            const double yR_1 = (height-y >= 1) ? y2.data[idx + 1*width] : 0.0;
-            y2.data[idx] =  fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0))));
+            const double xR_2 = ((height - y) >= 2) ? image->data[idx + (2 * width)] : 0.0f;
+            const double xR_1 = ((height - y) >= 1) ? image->data[idx + (1 * width)] : 0.0f;
+            const double yR_2 = ((height - y) >= 2) ?     y2.data[idx + (2 * width)] : 0.0f;
+            const double yR_1 = ((height - y) >= 1) ?     y2.data[idx + (1 * width)] : 0.0f;
+            y2.data[idx]  = fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0.0f))));
+            out.data[idx] = hypot(fma(coeffs->c2, (y1.data[idx] + y2.data[idx]), 0.0f), 0.0f);
         }
 
-    }
-
-    int k;
-    for(k = 0; k < pixel_count; k++)
-    {
-        out.data[k] = fma(coeffs->c1, (y1.data[k] + y2.data[k]), 0);  //(coeffs->c1) * (y1.data[k] + y2.data[k]);
     }
 
     for(y = 0; y < height; y++)
@@ -86,142 +81,30 @@ Mat applyDericheFilter(Mat *image, const Coeffs *coeffs) {
             const size_t row  = y * width;
             const size_t idx  = row + x;
             const double xL_0 = image->data[idx];
-            const double xL_1 = (x >= 1) ? image->data[idx - 1] : 0.0;
-            const double yL_2 = (x >= 2) ? y1.data[idx - 2]     : 0.0;
-            const double yL_1 = (x >= 1) ? y1.data[idx - 1]     : 0.0;
-            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0))));
+            const double xL_1 = (x >= 1) ? image->data[idx - 1] : 0.0f;
+            const double yL_2 = (x >= 2) ?     y1.data[idx - 2] : 0.0f;
+            const double yL_1 = (x >= 1) ?     y1.data[idx - 1] : 0.0f;
+            y1.data[idx] = fma(coeffs->a1, xL_0, fma(coeffs->a2, xL_1, fma(coeffs->b1, yL_1, fma(coeffs->b2, yL_2, 0.0f))));
         }
 
         /** RIGHT to LEFT iteration **/
-        for(x = (width-1); x >= 0; --x)
+        for(x = (width - 1); x >= 0; --x)
         {
             const size_t row  = y * width;
             const size_t idx  = row + x;
-            const double xR_2 = (width-x >= 2) ? image->data[idx + 2] : 0.0;
-            const double xR_1 = (width-x >= 1) ? image->data[idx + 1] : 0.0;
-            const double yR_2 = (width-x >= 2) ? y2.data[idx + 2]     : 0.0;
-            const double yR_1 = (width-x >= 1) ? y2.data[idx + 1]     : 0.0;
-            y2.data[idx] =  fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0))));
+            const double xR_2 = (width-x >= 2) ? image->data[idx + 2] : 0.0f;
+            const double xR_1 = (width-x >= 1) ? image->data[idx + 1] : 0.0f;
+            const double yR_2 = (width-x >= 2) ?     y2.data[idx + 2] : 0.0f;
+            const double yR_1 = (width-x >= 1) ?     y2.data[idx + 1] : 0.0f;
+            y2.data[idx]  = fma(coeffs->a3, xR_1, fma(coeffs->a4, xR_2, fma(coeffs->b1, yR_1, fma(coeffs->b2, yR_2, 0.0f))));
+            out.data[idx] = hypot(fma(coeffs->c2, (y1.data[idx] + y2.data[idx]), 0.0f), out.data[idx]);
         }
-
-    }
-
-    for(k = 0; k < pixel_count; k++)
-    {
-        out.data[k] = hypot(fma(coeffs->c2, (y1.data[k] + y2.data[k]), 0), out.data[k]);
-        //out.data[k] = fma(coeffs->c2, (y1.data[k] + y2.data[k]), out.data[k]);//(coeffs->c2) * (y1.data[k] + y2.data[k]);
     }
 
     destroyMatrix(&y1);
     destroyMatrix(&y2);
 
     return out;
-}
-
-GradMat getGradientMat(Mat *Gradx, Mat *Grady) {
-
-    GradMat out = createGradMatrix(Gradx->width, Gradx->height);
-
-    const int height = (int)(Gradx->height);
-    const int width  = (int)(Gradx->width);
-    const int pixel_count = width * height;
-
-    int k;
-    for(k = 0; k < pixel_count; k++)
-    {
-        out.mag[k] = hypot(Gradx->data[k],Grady->data[k]);
-        out.dir[k] = atan2(Gradx->data[k],Grady->data[k]);
-    }
-
-    return out;
-}
-
-void getGradient(Mat *Gradx, Mat *Grady, Mat*image) {
-
-    if(Gradx->height != Grady->height || Gradx->width != Grady->width)
-    {
-        perror("cannot compare matrices of different sizes! exiting getGradient");
-        exit(1);
-    }
-    const size_t height = Grady->height;
-    const size_t width  = Grady->width;
-
-    const size_t pixel_count = width * height;
-
-    int prev_gradient_direction_quadrant = -1;
-
-    for (int i = 1; i < width - 1; i++)
-    {
-        for (int j = 1; j < height - 1; j++)
-        {
-            const int c = i + width * j;
-            const int nn = c - width;
-            const int ss = c + width;
-            const int ww = c + 1;
-            const int ee = c - 1;
-            const int nw = nn + 1;
-            const int ne = nn - 1;
-            const int sw = ss + 1;
-            const int se = ss - 1;
-
-            const double G_c = hypot(Gradx->data[c], Grady->data[c]);
-            //const double G_d = atan2(Gradx->data[c], Grady->data[c]);
-
-            //int direction_quadrant;
-//
-//            if(G_d >= 0.0 && G_d <= M_PI_2)
-//                direction_quadrant = 0;
-//
-//            else if(G_d >= M_PI_2  && G_d <= M_PI)
-//                direction_quadrant = 1;
-//
-//            else if(G_d >= M_PI  && G_d <= (M_PI + M_PI_2))
-//                direction_quadrant = 2;
-//
-//            else if(G_d >= M_PI  && G_d <= (M_PI + M_PI_2))
-//                direction_quadrant = 3;
-
-            //printf("%lu :: hypot: %f, atan2: %f, direction: %lu, prev:%lu\n", c, G_c, G_d, direction_quadrant, prev_gradient_direction_quadrant);
-            //const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
-
-            image->data[c] = ((G_c >= MAGNITUDE_LIMIT)) ? MAGNITUDE_LIMIT : 0.0;//(G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
-
-           // prev_gradient_direction_quadrant = direction_quadrant;
-
-
-            //printf("%lu :: hypot: %f, direction: %f\n", c, G_c, G_d);
-            const double G_ee = hypot(Gradx->data[ee], Grady->data[ee]);
-            const double G_ww = hypot(Gradx->data[ww], Grady->data[ww]);
-            const double G_nw = hypot(Gradx->data[nw], Grady->data[nw]);
-            const double G_nn = hypot(Gradx->data[nn], Grady->data[nn]);
-            const double G_ne = hypot(Gradx->data[ne], Grady->data[ne]);
-            const double G_se = hypot(Gradx->data[se], Grady->data[se]);
-            const double G_ss = hypot(Gradx->data[ss], Grady->data[ss]);
-            const double G_sw = hypot(Gradx->data[sw], Grady->data[sw]);
-
-            //image->data[c] = (G_c >= MAGNITUDE_LIMIT) ? (MAGNITUDE_LIMIT) : 0.0;
-          //  continue;
-            const float dir = (float) (fmod(atan2(Grady->data[c], Gradx->data[c]) + M_PI, M_PI) / M_PI) * 8;
-
-//            if(G_c >= MAGNITUDE_LIMIT)
-//            {
-//                image->data[c] = MAGNITUDE_LIMIT;
-//            }
-            if (G_c >= MAGNITUDE_LIMIT)
-            {
-                if (((dir <= 1 || dir > 7) && G_c > G_ee && G_c > G_ww) || // 0 deg
-                    ((dir > 1 && dir <= 3) && G_c > G_nw && G_c > G_se) || // 45 deg
-                    ((dir > 3 && dir <= 5) && G_c > G_nn && G_c > G_ss) || // 90 deg
-                    ((dir > 5 && dir <= 7) && G_c > G_ne && G_c > G_sw))   // 135 deg
-
-                    image->data[c] = G_c;//MAGNITUDE_LIMIT;
-                else
-                    image->data[c] = 0.0;
-            }
-            else
-                image->data[c] = 0.0;
-        }
-    }
 }
 
 void hysteresisConnect(Mat *image, const size_t x, const size_t y, const int low) {
@@ -238,7 +121,7 @@ void hysteresisConnect(Mat *image, const size_t x, const size_t y, const int low
             if ((xx < width) && (yy < height) && (xx >= 0) & (yy >= 0) & (xx != x) & (yy != y))
             {
                 const size_t idx = (yy * width) + xx;
-                const double pxl_val = image->data[idx] ;//& 0xff;
+                const double pxl_val = image->data[idx];
 
                 if (pxl_val != 255.0)
                 {
@@ -255,13 +138,14 @@ void hysteresisConnect(Mat *image, const size_t x, const size_t y, const int low
             }
         }
     }
-
 }
-void hysteresisThreshold(Mat *image, const int low, const int high) {
+
+unsigned int hysteresisThreshold(Mat *image, const int low, const int high) {
 
     const size_t width  = image->width;
     const size_t height = image->height;
 
+    unsigned int numFound = 0;
     size_t x,y;
     for(x = 1; x < width; x++)
     {
@@ -272,6 +156,7 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
 
             if(pxl >= high)
             {
+                numFound++;
                 image->data[idx] = 255.0;
                 hysteresisConnect(image, x, y, low);
             }
@@ -291,6 +176,7 @@ void hysteresisThreshold(Mat *image, const int low, const int high) {
             }
         }
     }
+    return numFound;
 }
 
 
@@ -356,6 +242,99 @@ DericheCoeffs getDericheCoeffs(const double ALPHA) {
     return coeffs;
 }
 
+/**
+ * Computes the gradient for an image, and returns a Gradient Matrix
+ * @param image
+ * @param ALPHA
+ * @return
+ */
+GradMat getGradientMat(Mat *image, const double ALPHA) {
+
+    const const unsigned int pixel_count = image->width * image->height;
+
+    GradMat out = createGradMatrix(image->width, image->height);
+
+    const DericheCoeffs dericheCoeffs = getDericheCoeffs(ALPHA);
+    Mat xGradient = applyDericheFilter(image, &dericheCoeffs.xGradient);
+    Mat yGradient = applyDericheFilter(image, &dericheCoeffs.yGradient);
+
+    unsigned int k;
+    for(k = 0; k < pixel_count; k++)
+    {
+        out.mag[k] = hypot(xGradient.data[k], yGradient.data[k]);
+        if (out.mag[k] >= MAGNITUDE_LIMIT)
+        {
+            out.dir[k] = (fmod(atan2(xGradient.data[k], yGradient.data[k]) + M_PI, M_PI) / M_PI) * 8.0f;
+        }
+    }
+
+    destroyMatrix(&xGradient);
+    destroyMatrix(&yGradient);
+
+    return out;
+}
+
+void performMagnitudeSupression(Mat *image, const GradMat *gradients) {
+
+    const unsigned int height = image->height;
+    const unsigned int width = image->width;
+
+    const size_t pixel_count = width * height;
+
+    unsigned int i, j;
+    for (i = 1; i < width - 1; i++)
+    {
+        for (j = 1; j < height - 1; j++)
+        {
+            const unsigned int cc = i + width * j;
+            const double     G_cc = gradients->mag[cc];
+
+            /** Nothing to do here if G_cc is not 255.0! **/
+            if(G_cc < MAGNITUDE_LIMIT)
+            {
+                image->data[cc] = 0.0f;
+                continue;
+            }
+
+            /** Set indices for 8-neighbors **/
+            const unsigned int nn = cc - width;
+            const unsigned int ss = cc + width;
+            const unsigned int ww = cc + 1;
+            const unsigned int ee = cc - 1;
+            const unsigned int nw = nn + 1;
+            const unsigned int ne = nn - 1;
+            const unsigned int sw = ss + 1;
+            const unsigned int se = ss - 1;
+
+            /** get gradients 8-neighbors **/
+            const double G_ee = (i > 0)                                 ? gradients->mag[ee] : 0.0f;
+            const double G_ww = (i < (width - 1))                       ? gradients->mag[ww] : 0.0f;
+            const double G_nw = (j > 0)            && (i < (width - 1)) ? gradients->mag[nw] : 0.0f;
+            const double G_nn = (j > 0)                                 ? gradients->mag[nn] : 0.0f;
+            const double G_ne = (j > 0)            && (i > 0)           ? gradients->mag[ne] : 0.0f;
+            const double G_se = (j < (height - 1)) && (i > 0)           ? gradients->mag[se] : 0.0f;
+            const double G_ss = (j < (height - 1))                      ? gradients->mag[ss] : 0.0f;
+            const double G_sw = (j < (height - 1)) && (i < (width - 1)) ? gradients->mag[sw] : 0.0f;
+
+            const double dir = gradients->dir[cc];
+
+            if (((dir <= 1 || dir > 7) && G_cc > G_ee && G_cc > G_ww) || // 0 deg
+                ((dir > 1 && dir <= 3) && G_cc > G_nw && G_cc > G_se) || // 45 deg
+                ((dir > 3 && dir <= 5) && G_cc > G_nn && G_cc > G_ss) || // 90 deg
+                ((dir > 5 && dir <= 7) && G_cc > G_ne && G_cc > G_sw))   // 135 deg
+
+                image->data[cc] = MAGNITUDE_LIMIT;
+            else
+                image->data[cc] = 0.0;
+        }
+    }
+}
+/**
+ * Deriche edge-detection main function.
+ * @param image
+ * @param filterOptions
+ * @return
+ */
 Mat edgeDetect(Mat *image, const Options filterOptions) {
 
     Mat blurredImage = *image;
@@ -385,15 +364,9 @@ Mat edgeDetect(Mat *image, const Options filterOptions) {
     }
 
     /** Perform all gradient analysis including X, Y gradient & magnitude supression **/
-
-    const DericheCoeffs dericheCoeffs = getDericheCoeffs(filterOptions.ALPHA_GRADIENT);
-    Mat xGradient = applyDericheFilter(&blurredImage, &dericheCoeffs.xGradient);
-    Mat yGradient = applyDericheFilter(&blurredImage, &dericheCoeffs.yGradient);
-
-    getGradient(&xGradient, &yGradient, &blurredImage);
-
-    destroyMatrix(&yGradient);
-    destroyMatrix(&xGradient);
+    GradMat gradMat = getGradientMat(&blurredImage, filterOptions.ALPHA_GRADIENT);
+    performMagnitudeSupression(&blurredImage, &gradMat);
+    destroyGradMatrix(&gradMat);
 
     if (filterOptions.ALPHA_BLUR > 0)
     {
@@ -402,6 +375,5 @@ Mat edgeDetect(Mat *image, const Options filterOptions) {
 
     return blurredImage;
 }
-
 
 #endif //HOUGHTRANSFORM_DERICHE_H
