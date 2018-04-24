@@ -5,44 +5,15 @@
 #ifndef HOUGHTRANSFORM_HOUGH_H
 #define HOUGHTRANSFORM_HOUGH_H
 
-#define MAX_BRIGHTNESS 255.0
-#define MIN_BRIGHTNESS 0.0
-
-#define HOUGH_THRESHOLD 0
-#define NORMALIZE_ALPHA 1
 #define KERNEL_MULTIPLIER 20
 #define DEG2RAD (M_PI / 180.0f)
 
 #include <math.h>
 #include "bmp.h"
-#include "helper.h"
+#include "mat.h"
 #include "deriche.h"
 
-void normalizeImage(Mat *image) {
-
-    /* get image size parameters */
-    const size_t img_width = image->width;
-    const size_t img_height = image->height;
-    const size_t pixel_count = img_height * img_width;
-
-    double max = 0.0;
-
-    /* calculate brightness for all pixels & find the brightest pixel */
-    size_t i;
-    for (i = 0; i < pixel_count; i++)
-    {
-        max = (image->data[i] > max) ? image->data[i] : max;
-    }
-
-    const double ALPHA = (MAX_BRIGHTNESS / max);
-
-    for (i = 0; i < pixel_count; i++)
-    {
-        image->data[i] = (image->data[i] * ALPHA);
-    }
-}
-
-Mat HoughTransform(Mat *grayscale_img) {
+Mat *HoughTransform(const Mat *grayscale_img) {
 
     size_t i;
 
@@ -52,7 +23,7 @@ Mat HoughTransform(Mat *grayscale_img) {
     const size_t img_pixel_count = img_height * img_width;
 
     /** calculate diagonal length for hough-transformed image **/
-    const size_t diag_len = (size_t) hypot(img_height, img_width);
+    const size_t diag_len = (size_t) hypotf(img_height, img_width);
 
     /** initialize output matrix with parameters **/
     const size_t width = 180;
@@ -60,26 +31,25 @@ Mat HoughTransform(Mat *grayscale_img) {
     printf("hough image length:%lu, %lu\n", height, width);
 
     /** create matrix **/
-    Mat houghMatrix = createMatrix(width, height, 1);
+    Mat *houghMatrix = Mat_generate(width, height, 1);
 
     /** Read read input image pixel values, and perform hough transform on each value that exceeds threshold **/
     for (i = 0; i < img_pixel_count; i++)
     {
-        if(grayscale_img->data[i] <= HOUGH_THRESHOLD)
-            continue;
-
         int angle;
         const size_t y = (i / img_width);
         const size_t x = (i % img_width);
+        const float magnitude = grayscale_img->data[i];
         for (angle = -90; angle < 90; angle++)
         {
-            const double theta = fma(DEG2RAD, angle, 0);                           // (M_PI * angle) / 180.0;
-            const double rho = fma(x,cos(theta), fma(y,sin(theta), 0));           // (x * cos(theta)) + (y * sin(theta));
-            const size_t rho_offset = (size_t) ((round(rho + diag_len) * 180.0));
-            houghMatrix.data[rho_offset + angle + 90] += 1;
+            const float theta = fmaf(DEG2RAD, angle, 0);                           // (M_PI * angle) / 180.0;
+            const float rho = fmaf(x,cosf(theta), fma(y,sinf(theta), 0));           // (x * cos(theta)) + (y * sin(theta));
+            const size_t rho_offset = (size_t) ((roundf(rho + diag_len) * 180.0));
+            houghMatrix->data[rho_offset + angle + 90] += magnitude;
         }
     }
-    normalizeImage(&houghMatrix);
+    //normalizeImage(houghMatrix);
+    applyDericheFilter(houghMatrix, DericheCoeffs_generate(0.8)->blur);
     return houghMatrix;
 }
 
@@ -95,7 +65,7 @@ void suppressNeighborsHough(Mat *image, const unsigned int x, const unsigned int
 
     const size_t height = image->height;
     const size_t width  = image->width;
-    double *data = image->data;
+    float *data = image->data;
 
     const size_t kernel_width = 180 / KERNEL_MULTIPLIER;
     const size_t kernel_height = height / KERNEL_MULTIPLIER;
@@ -110,12 +80,12 @@ void suppressNeighborsHough(Mat *image, const unsigned int x, const unsigned int
                 continue;
 
             const unsigned int idx = (yy * image->width) + xx;
-            const double pxl_val = image->data[idx];
+            const float pxl_val = image->data[idx];
 
             if(pxl_val > 0)
             {
                 image->data[idx] = 0.0f;
-                printf("Suppressing @ : X:%lu, Y:%lu, XX:%lu, YY:%lu\n", x, y, xx, yy);
+                printf("Suppressing @ : X:%u, Y:%u, XX:%d, YY:%d\n", x, y, xx, yy);
             }
         }
     }
@@ -123,49 +93,49 @@ void suppressNeighborsHough(Mat *image, const unsigned int x, const unsigned int
 }
 /** HoughMat is the input here where width = 180 & height = 2 * diagonal distance **/
 
-/**
- * Detects the polygon edge-count by performing Deriche detection on the Hough image now :) and supresses neighbors in
- * a given kernel size. In effect, counts one occurence per kernel, and traverses over the image meaningfully
- * @param image
- * @return
- */
-unsigned int getPolygonEdgeCount(Mat *image) {
-
-    Options filterOptions;
-    filterOptions.ALPHA_GRADIENT = 1.0;
-    filterOptions.ALPHA_BLUR = 10.0;
-    filterOptions.HYSTERESIS_THRESHOLD_LOW  = 0.50f * MAGNITUDE_LIMIT;
-    filterOptions.HYSTERESIS_THRESHOLD_HIGH = 0.50f * MAGNITUDE_LIMIT;
-
-    *image = edgeDetect(image, filterOptions);
-
-    unsigned int x, y;
-    for(x = 0; x < image->width; x++)
-    {
-        for (y = 0; y < image->height; y++)
-        {
-            const unsigned int idx = (y * image->width) + x;
-            const double pxl_val = image->data[idx];
-
-            if(pxl_val > 0)
-            {
-                suppressNeighborsHough(image, x, y);
-            }
-        }
-    }
-
-    unsigned int i, numEdgesFound = 0;
-    const unsigned int pxl_cnt = image->width * image->height;
-    for(i=0; i<pxl_cnt;i++)
-    {
-        if(image->data[i] > 0)
-        {
-            numEdgesFound++;
-        }
-    }
-
-    return numEdgesFound;
-}
+///**
+// * Detects the polygon edge-count by performing Deriche detection on the Hough image now :) and supresses neighbors in
+// * a given kernel size. In effect, counts one occurence per kernel, and traverses over the image meaningfully
+// * @param image
+// * @return
+// */
+//unsigned int getPolygonEdgeCount(Mat *image) {
+//
+//    Options filterOptions;
+//    filterOptions.ALPHA_GRADIENT = 1.0;
+//    filterOptions.ALPHA_BLUR = 10.0;
+//    filterOptions.HYSTERESIS_THRESHOLD_LOW  = 0.50f * MAGNITUDE_LIMIT;
+//    filterOptions.HYSTERESIS_THRESHOLD_HIGH = 0.50f * MAGNITUDE_LIMIT;
+//
+//    *image = edgeDetect(image, filterOptions);
+//
+//    unsigned int x, y;
+//    for(x = 0; x < image->width; x++)
+//    {
+//        for (y = 0; y < image->height; y++)
+//        {
+//            const unsigned int idx = (y * image->width) + x;
+//            const double pxl_val = image->data[idx];
+//
+//            if(pxl_val > 0)
+//            {
+//                suppressNeighborsHough(image, x, y);
+//            }
+//        }
+//    }
+//
+//    unsigned int i, numEdgesFound = 0;
+//    const unsigned int pxl_cnt = image->width * image->height;
+//    for(i=0; i<pxl_cnt;i++)
+//    {
+//        if(image->data[i] > 0)
+//        {
+//            numEdgesFound++;
+//        }
+//    }
+//
+//    return numEdgesFound;
+//}
 
 #endif //HOUGHTRANSFORM_HOUGH_H
 

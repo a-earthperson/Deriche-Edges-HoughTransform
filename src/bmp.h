@@ -1,6 +1,9 @@
 #ifndef BMP
 #define BMP
-#include "m_mem.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <error.h>
 
 #pragma pack(1)
 struct BitMap
@@ -40,17 +43,17 @@ unsigned char* imread(char* name)
         exit(1);
     }
 
+    printf("Opening file: %s\n", name);
     printf("Reading the bmp header...\n");
     fread(&Header, sizeof(Header), 1, BMP_in);
     fread(&InfoHeader, sizeof(InfoHeader), 1, BMP_in);
 
-    /** setting height and width to abs values since this breaks on linux and mac os machines **/
+    /** setting height and width to abs values since this breaks on Mac OS**/
     InfoHeader.Width = abs(InfoHeader.Width);
     InfoHeader.Height = abs(InfoHeader.Height);
 
-
-    printf("size of Header = %d\n", sizeof(Header));
-    printf("size of InfoHeader = %d\n", sizeof(InfoHeader));
+    printf("size of Header = %lu\n", sizeof(Header));
+    printf("size of InfoHeader = %lu\n", sizeof(InfoHeader));
     printf("Width: %d\n", InfoHeader.Width);
     printf("Height: %d\n", InfoHeader.Height);
 
@@ -59,24 +62,23 @@ unsigned char* imread(char* name)
     padding = (4 - ((InfoHeader.Width*3) % 4)) % 4 ;
     pad = malloc(padding*sizeof(unsigned char));
 
-    bitmap = malloc(datasize);
+    bitmap = (unsigned char *) malloc(datasize);
 
 
 
     if (!bitmap)
     {
         printf("out of memory!\n");
-    }
-    else
-    {
-        printf("Successfully allocated memory for the bitmap\n");
-
+        exit(1);
+        return NULL;
     }
 
+    printf("Successfully allocated memory for the bitmap\n");
     printf("Reading BMP file...\n");
+
     for (i=0; i < datasize; i++)
     {
-        fread(&bitmap[i], 1,1,  BMP_in);
+        fread(&bitmap[i], 1,1, BMP_in);
 
         if (i % (3*InfoHeader.Width) == 3*InfoHeader.Width -1)
         {
@@ -85,6 +87,7 @@ unsigned char* imread(char* name)
 
     }
 
+    free(pad);
 
     fclose(BMP_in);
 
@@ -108,12 +111,12 @@ void imshow(char* name,unsigned char* bitmap)
     filesize = 54 + 3*InfoHeader.Width* InfoHeader.Height;
 
     padding = (4 - ((InfoHeader.Width*3) % 4)) % 4 ;
-    pad = malloc(padding*sizeof(unsigned char));
+    pad = calloc(padding,sizeof(unsigned char));
 
-    for (i = 0; i < padding; i++)
-    {
-        pad[i] = 0;
-    }
+//    for (i = 0; i < padding; i++)
+//    {
+//        pad[i] = 0;
+//    }
 
 
     unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
