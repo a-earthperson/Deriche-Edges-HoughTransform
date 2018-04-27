@@ -396,61 +396,82 @@ void calculateGradientIntensities(Mat *xGrad, Mat* yGrad) {
     free(directions);
 }
 
-//void performMagnitudeSupression(Mat *image, const GradMat *gradients) {
-//
-//    const unsigned int height = image->height;
-//    const unsigned int width = image->width;
-//
-//    const size_t pixel_count = width * height;
-//
-//    unsigned int i, j;
-//    for (i = 1; i < width - 1; i++)
-//    {
-//        for (j = 1; j < height - 1; j++)
-//        {
-//            const unsigned int cc = i + width * j;
-//            const float     G_cc = gradients->mag[cc];
-//
-//            /** Nothing to do here if G_cc is not 255.0! **/
+void performMagnitudeSupression(Mat *xGrad, Mat* yGrad) {
+
+    if(xGrad == NULL || yGrad == NULL || xGrad->width != yGrad->width || xGrad->height != yGrad->height || xGrad->data==NULL || yGrad->data==NULL)
+        return;
+
+
+    const unsigned int height = xGrad->height;
+    const unsigned int width = xGrad->width;
+
+    const size_t pixel_count = width * height;
+
+    float *directions = malloc(pixel_count* sizeof(float));
+
+    if(directions == NULL)
+        return;
+
+    // set location of gradient magnitudes
+    float *gradients = xGrad->data;
+
+    unsigned int i, j;
+    // compute magnitude using hypotf
+    for(i = 0; i < pixel_count; i++)
+    {
+        gradients[i] = hypotf(xGrad->data[i], yGrad->data[i]);
+        directions[i] = (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
+    }
+
+    for (i = 1; i < width - 1; i++)
+    {
+        for (j = 1; j < height - 1; j++)
+        {
+            const unsigned int cc = i + width * j;
+            const float     G_cc = gradients[cc];
+
+            /** Nothing to do here if G_cc is not 255.0! **/
 //            if(G_cc < MAGNITUDE_LIMIT)
 //            {
-//                image->data[cc] = 0.0f;
+//                yGrad->data[cc] = 0.0f;
 //                continue;
 //            }
-//
-//            /** Set indices for 8-neighbors **/
-//            const unsigned int nn = cc - width;
-//            const unsigned int ss = cc + width;
-//            const unsigned int ww = cc + 1;
-//            const unsigned int ee = cc - 1;
-//            const unsigned int nw = nn + 1;
-//            const unsigned int ne = nn - 1;
-//            const unsigned int sw = ss + 1;
-//            const unsigned int se = ss - 1;
-//
-//            /** get gradients 8-neighbors **/
-//            const float G_ee = (i > 0)                                 ? gradients->mag[ee] : 0.0f;
-//            const float G_ww = (i < (width - 1))                       ? gradients->mag[ww] : 0.0f;
-//            const float G_nw = (j > 0)            && (i < (width - 1)) ? gradients->mag[nw] : 0.0f;
-//            const float G_nn = (j > 0)                                 ? gradients->mag[nn] : 0.0f;
-//            const float G_ne = (j > 0)            && (i > 0)           ? gradients->mag[ne] : 0.0f;
-//            const float G_se = (j < (height - 1)) && (i > 0)           ? gradients->mag[se] : 0.0f;
-//            const float G_ss = (j < (height - 1))                      ? gradients->mag[ss] : 0.0f;
-//            const float G_sw = (j < (height - 1)) && (i < (width - 1)) ? gradients->mag[sw] : 0.0f;
-//
-//            const float dir = gradients->dir[cc];
-//
-//            if (((dir <= 1 || dir > 7) && G_cc > G_ee && G_cc > G_ww) || // 0 deg
-//                ((dir > 1 && dir <= 3) && G_cc > G_nw && G_cc > G_se) || // 45 deg
-//                ((dir > 3 && dir <= 5) && G_cc > G_nn && G_cc > G_ss) || // 90 deg
-//                ((dir > 5 && dir <= 7) && G_cc > G_ne && G_cc > G_sw))   // 135 deg
-//
-//                image->data[cc] = MAGNITUDE_LIMIT;
-//            else
-//                image->data[cc] = 0.0;
-//        }
-//    }
-//}
+
+            /** Set indices for 8-neighbors **/
+            const unsigned int nn = cc - width;
+            const unsigned int ss = cc + width;
+            const unsigned int ww = cc + 1;
+            const unsigned int ee = cc - 1;
+            const unsigned int nw = nn + 1;
+            const unsigned int ne = nn - 1;
+            const unsigned int sw = ss + 1;
+            const unsigned int se = ss - 1;
+
+            /** get gradients 8-neighbors **/
+            const float G_ee = (i > 0)                                 ? gradients[ee] : 0.0f;
+            const float G_ww = (i < (width - 1))                       ? gradients[ww] : 0.0f;
+            const float G_nw = (j > 0)            && (i < (width - 1)) ? gradients[nw] : 0.0f;
+            const float G_nn = (j > 0)                                 ? gradients[nn] : 0.0f;
+            const float G_ne = (j > 0)            && (i > 0)           ? gradients[ne] : 0.0f;
+            const float G_se = (j < (height - 1)) && (i > 0)           ? gradients[se] : 0.0f;
+            const float G_ss = (j < (height - 1))                      ? gradients[ss] : 0.0f;
+            const float G_sw = (j < (height - 1)) && (i < (width - 1)) ? gradients[sw] : 0.0f;
+
+            const float dir = gradients[cc];
+
+            if (((dir <= 1 || dir > 7) && G_cc > G_ee && G_cc > G_ww) || // 0 deg
+                ((dir > 1 && dir <= 3) && G_cc > G_nw && G_cc > G_se) || // 45 deg
+                ((dir > 3 && dir <= 5) && G_cc > G_nn && G_cc > G_ss) || // 90 deg
+                ((dir > 5 && dir <= 7) && G_cc > G_ne && G_cc > G_sw))   // 135 deg
+
+                yGrad->data[cc] = MAGNITUDE_LIMIT;
+            else
+                yGrad->data[cc] = 0.0;
+        }
+    }
+
+    free(directions);
+}
 
 
 #endif //HOUGHTRANSFORM_DERICHE_H

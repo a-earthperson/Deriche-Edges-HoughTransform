@@ -48,8 +48,6 @@ Mat *HoughTransform(const Mat *grayscale_img) {
             houghMatrix->data[rho_offset + angle + 90] += magnitude;
         }
     }
-    //normalizeImage(houghMatrix);
-    applyDericheFilter(houghMatrix, DericheCoeffs_generate(0.8)->blur);
     return houghMatrix;
 }
 

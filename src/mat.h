@@ -10,6 +10,7 @@
 #include "bmp.h"
 #include <math.h>
 #include <stdlib.h>
+#include <float.h>
 
 typedef struct
 {
@@ -91,10 +92,7 @@ Mat *Mat_generate(const size_t width, const size_t height, const unsigned int ze
             data[i] = 0.0f;
     }
 
-    if(VERBOSE)
-    {
-        printf("Bytes assigned for Mat(w:%lu  x h: %lu): %lu\n", width, height, pixel_count * sizeof(float));
-    }
+    printf("Bytes assigned for Mat(w:%lu  x h: %lu): %lu\n", width, height, pixel_count * sizeof(float));
 
     newMatrix->width = width;
     newMatrix->height = height;
@@ -128,7 +126,7 @@ void Mat_destroy(Mat *toDestroy) {
     free(toDestroy);
 }
 
-void normalizeImageWithMax(Mat *image, const float max, const unsigned char inverted) {
+float normalizeImageWithMax(Mat *image, const float max, const unsigned char inverted) {
 
     /* get image size parameters */
     const size_t img_width = image->width;
@@ -137,19 +135,23 @@ void normalizeImageWithMax(Mat *image, const float max, const unsigned char inve
 
     if(max == 0)
     {
-        return;
+        return 0;
     }
 
     const float ALPHA = (MAX_BRIGHTNESS / max);
 
     size_t i;
 
+    float cmax = FLT_MIN;
+
     // if invert colors set to true
     if(inverted)
     {
         for (i = 0; i < pixel_count; i++)
         {
-            image->data[i] = MAX_BRIGHTNESS - (image->data[i] * ALPHA);
+            const float val = MAX_BRIGHTNESS - (image->data[i] * ALPHA);
+            if(val > cmax) cmax = val;
+            image->data[i] = val;
         }
     }
 
@@ -157,19 +159,32 @@ void normalizeImageWithMax(Mat *image, const float max, const unsigned char inve
     {
         for (i = 0; i < pixel_count; i++)
         {
-            image->data[i] = (image->data[i] * ALPHA);
+            const float val = (image->data[i] * ALPHA);
+            if(val > cmax) cmax = val;
+            image->data[i] = val;
         }
+    }
+
+    return cmax;
+}
+
+void Mat_multiply(Mat *x, Mat *y) {
+    size_t i;
+    const size_t n = x->width * x->height;
+    for(i = 0; i < n; i++)
+    {
+        y->data[i] = x->data[i] * y->data[i];
     }
 }
 
-void normalizeImage(Mat *image) {
+float normalizeImage(Mat *image) {
 
     /* get image size parameters */
     const size_t img_width = image->width;
     const size_t img_height = image->height;
     const size_t pixel_count = img_height * img_width;
 
-    float max = 0;
+    float max = FLT_MIN;
 
     /* calculate brightness for all pixels & find the brightest pixel */
     size_t i;
@@ -181,7 +196,7 @@ void normalizeImage(Mat *image) {
         }
     }
 
-    normalizeImageWithMax(image, max, 0);
+    return normalizeImageWithMax(image, max, 0);
 }
 
 /**

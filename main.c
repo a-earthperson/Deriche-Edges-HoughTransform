@@ -6,6 +6,8 @@
 #include "src/mat.h"
 #include "src/hough.h"
 #include "src/deriche.h"
+#include "src/otsu.h"
+
 
 void processImage(char *inputFile, const Options filterOptions) {
 
@@ -23,6 +25,10 @@ void processImage(char *inputFile, const Options filterOptions) {
         DericheCoeffs_destroy(dericheCoeffs);
         Mat2CSV(inputFile, grayedImage, ".blur.csv");
     }
+
+    unsigned int threshold = computeThreshold(grayedImage);
+    printf("Otsu threshold:%u\n", threshold);
+    Mat2CSV(inputFile, grayedImage, ".otsu.csv");
 
     /** Step 3 : Gradients! **/
     if(filterOptions.ALPHA_GRADIENT > 0)
@@ -45,13 +51,16 @@ void processImage(char *inputFile, const Options filterOptions) {
 
         /** Step 3c: Intensity & Gradient calculation with non-maximal supression **/
         // Calculate the gradient intensities, storing the result in yGradient
-        calculateGradientIntensities(xGradient, yGradient);
-        Mat2CSV(inputFile, grayedImage, ".gradNonMaximalSupression.csv");
+        //alculateGradientIntensities(xGradient, yGradient);
+        performMagnitudeSupression(xGradient, yGradient);
+        Mat2CSV(inputFile, xGradient, ".gradOnly.csv");
+        Mat2CSV(inputFile, yGradient, ".gradNonMaximal.csv");
 
-        Mat2CSV(inputFile, xGradient, ".gradMagsOnly.csv");
 
-        Mat *houghImage = HoughTransform(xGradient);
-        Mat2CSV(inputFile, houghImage, ".hough.csv");
+        grayedImage = xGradient;
+
+        //xGradient = grayedImage;
+        //Mat_destroy(xGradient);
 
         //free(xGradient->data);
         //xGradient->data = yGradient->dir;
@@ -72,6 +81,59 @@ void processImage(char *inputFile, const Options filterOptions) {
         hysteresisThreshold(grayedImage, filterOptions.HYSTERESIS_THRESHOLD_LOW, filterOptions.HYSTERESIS_THRESHOLD_HIGH);
         Mat2CSV(inputFile, grayedImage, ".hysteresis.csv");
     }
+
+    Mat *houghImage = HoughTransform(grayedImage);
+    Mat2CSV(inputFile, houghImage, ".hough.csv");
+
+
+    Mat *xHough = Mat_copy(houghImage);
+    applyDericheFilter(xHough, DericheCoeffs_generate(100)->xGradient);
+
+    Mat *yHough = Mat_copy(houghImage);
+    applyDericheFilter(yHough, DericheCoeffs_generate(100)->yGradient);
+
+    performMagnitudeSupression(xHough, yHough);
+    computeThreshold(xHough);
+    Mat_multiply(houghImage, xHough);
+    Mat2CSV(inputFile, xHough, ".hough-gradOnly.csv");
+
+//    unsigned int threshold = computeThreshold(houghImage);
+//    printf("Otsu threshold:%u\n", threshold);
+//    Mat2CSV(inputFile, houghImage, ".otsu.csv");
+
+    Mat_destroy(houghImage);
+    //    Mat *xGradient = Mat_copy(houghImage);
+//    Mat *yGradient = Mat_copy(houghImage);
+//
+//    // Generate the Deriche Coefficients
+//    DericheCoeffs *gradients = DericheCoeffs_generate(500);
+//
+//    /** Step 3a: X-Gradient **/
+//    applyDericheFilter(xGradient, gradients->xGradient);
+//
+//    /** Step 3b : Y-Gradient **/
+//    applyDericheFilter(yGradient, gradients->yGradient);
+//
+//
+//
+//    /** Step 3c: Intensity & Gradient calculation with non-maximal supression **/
+//    // Calculate the gradient intensities, storing the result in yGradient
+//    //calculateGradientIntensities(xGradient, yGradient);
+//    performMagnitudeSupression(xGradient, yGradient);
+//    Mat2CSV(inputFile, xGradient, ".magOnly-hough.csv");
+//    Mat2CSV(inputFile, yGradient, ".magWithSuppresion-hough.csv");
+//
+//    size_t i = 0, pixel_count = houghImage->width * houghImage->height;
+//    for(i = 0; i < pixel_count; i++)
+//    {
+//        if(xGradient->data[i] != 0)
+//           xGradient->data[i] = houghImage->data[i] * xGradient->data[i];
+//
+//    }
+//    normalizeImage(xGradient);
+//    Mat2CSV(inputFile, xGradient, ".magsDivided.csv");
+//
+
 
 
     //Mat *houghImage = HoughTransform(grayedImage);
@@ -132,13 +194,13 @@ int main() {
     //mem_init();
 
     /** Hollow Images **/
-  // Options hollowImageOptions;
-  //  hollowImageOptions.ALPHA_BLUR = 0;
-  //  hollowImageOptions.ALPHA_GRADIENT = 10;
-   // hollowImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
-   // hollowImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
+    Options hollowImageOptions;
+    hollowImageOptions.ALPHA_BLUR = 0;
+    hollowImageOptions.ALPHA_GRADIENT = 100;
+    hollowImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
+    hollowImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
     //processImage("../examples/sunflower.bmp", hollowImageOptions);
-    //processImage("../examples/image2.bmp", hollowImageOptions);
+    processImage("../examples/image3.bmp", hollowImageOptions);
     //processImage("../examples/rubix.bmp", hollowImageOptions);
     //processImage("../bitmaps/image2.bmp", hollowImageOptions, "../outputs/grayscale/image2.csv", "../outputs/hough/image2.csv");
     //processImage("../bitmaps/image3.bmp", hollowImageOptions, "../outputs/grayscale/image3.csv", "../outputs/hough/image3.csv");
@@ -171,11 +233,11 @@ int main() {
 
     /** Solid - Handrawn polygons **/
     Options solidHandDrawnImageOptions;
-    solidHandDrawnImageOptions.ALPHA_BLUR = 1.0;
-    solidHandDrawnImageOptions.ALPHA_GRADIENT = 1.0;
+    solidHandDrawnImageOptions.ALPHA_BLUR = 0.5;
+    solidHandDrawnImageOptions.ALPHA_GRADIENT = 10.0;
     solidHandDrawnImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
     solidHandDrawnImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
-      processImage("../examples/diamond.bmp", solidHandDrawnImageOptions);
+    //processImage("../examples/diamond.bmp", solidHandDrawnImageOptions);
 //    processImage("../bitmaps/diamond.bmp", solidHandDrawnImageOptions, "../outputs/grayscale/diamond.csv", "../outputs/hough/diamond.csv");
 
     /** Partially filled, handrawn polygon **/

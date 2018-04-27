@@ -98,25 +98,16 @@ unsigned char* imread(char* name)
 
 void imshow(char* name,unsigned char* bitmap)
 {
-
-
-
     FILE *BMP_out;
     int filesize, datasize, i;
     int padding;
     unsigned char *pad;
-
 
     datasize = InfoHeader.Width*InfoHeader.Height*3;
     filesize = 54 + 3*InfoHeader.Width* InfoHeader.Height;
 
     padding = (4 - ((InfoHeader.Width*3) % 4)) % 4 ;
     pad = calloc(padding,sizeof(unsigned char));
-
-//    for (i = 0; i < padding; i++)
-//    {
-//        pad[i] = 0;
-//    }
 
 
     unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
