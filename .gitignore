@@ -1,10 +1,7 @@
 cmake-build-debug/
 .idea/
-outputs/*
 .DS_Store
 
+bitmaps/*
 generated/*
-
 examples/*.csv
-
-outputs/*
