@@ -6,3 +6,5 @@ outputs/*
 generated/*
 
 examples/*.csv
+
+outputs/*

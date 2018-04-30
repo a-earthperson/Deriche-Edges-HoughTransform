@@ -1,12 +1,17 @@
 # Convex Polygon Detection using Linear Hough Transform
 
 
+## Instructions
+
 ## Implementation Pipeline
 
 ### Stage 0: Read Bitmap as 2D matrix
-### Stage 2: Deriche Filter
 
-### Stage 3: Linear Hough Transform
+### Stage 1: Deriche Blur Filter
+
+### Stage 2: Deriche Edge Detector
+
+### Stage 3: Hysteresis Thresholding
 
 ### Stage 4:
 
