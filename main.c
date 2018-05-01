@@ -24,11 +24,12 @@ void processImage(char *inputFile, const Options filterOptions) {
         if(VERBOSE) Mat2CSV(inputFile, grayedImage, ".blur.csv");
     }
 
+    /** Step 3: Otsu Threshold **/
     unsigned int threshold = computeThreshold(grayedImage);
     printf("Otsu threshold:%u\n", threshold);
     if(VERBOSE) Mat2CSV(inputFile, grayedImage, ".otsu.csv");
 
-    /** Step 3 : Gradients! **/
+    /** Step 4 : Gradients! **/
     if(filterOptions.ALPHA_GRADIENT > 0)
     {
         // Prepare two copies of the gray image, one for x-gradient and the other for y-gradient
@@ -55,22 +56,8 @@ void processImage(char *inputFile, const Options filterOptions) {
         if(VERBOSE) Mat2CSV(inputFile, xGradient, ".gradOnly.csv");
         if(VERBOSE) Mat2CSV(inputFile, yGradient, ".gradNonMaximal.csv");
 
-
         grayedImage = xGradient;
-
-        //xGradient = grayedImage;
-        //Mat_destroy(xGradient);
-
-        //free(xGradient->data);
-        //xGradient->data = yGradient->dir;
-
-        //Mat2CSV(inputFile, xGradient, ".gradDirs.csv");
-        //printf("gradient matrix max: %f\n", grayedImage->max);
-
-
-        // destroy x-gradient since we dont need it anymore, all the results are in yGradient = grayedImage
-        //Mat_destroy(xGradient);
-
+        Mat_destroy(yGradient);
         DericheCoeffs_destroy(gradients);
     }
 
@@ -86,16 +73,16 @@ void processImage(char *inputFile, const Options filterOptions) {
     if(VERBOSE) Mat2CSV(inputFile, houghImage, ".hough.csv");
 
 
-    Mat *xHough = Mat_copy(houghImage);
-    applyDericheFilter(xHough, DericheCoeffs_generate(100)->xGradient);
-
-    Mat *yHough = Mat_copy(houghImage);
-    applyDericheFilter(yHough, DericheCoeffs_generate(100)->yGradient);
-
-    performMagnitudeSupression(xHough, yHough);
-    computeThreshold(xHough);
-    Mat_multiply(houghImage, xHough);
-    if(VERBOSE) Mat2CSV(inputFile, xHough, ".hough-gradOnly.csv");
+//    Mat *xHough = Mat_copy(houghImage);
+//    applyDericheFilter(xHough, DericheCoeffs_generate(100)->xGradient);
+//
+//    Mat *yHough = Mat_copy(houghImage);
+//    applyDericheFilter(yHough, DericheCoeffs_generate(100)->yGradient);
+//
+//    performMagnitudeSupression(xHough, yHough);
+//    computeThreshold(xHough);
+//    Mat_multiply(houghImage, xHough);
+//    if(VERBOSE) Mat2CSV(inputFile, xHough, ".hough-gradOnly.csv");
 
     /** Step 6: Polygon edge count **/
     printf("Polygon Edge Count  : %d\n", -1);
@@ -114,13 +101,13 @@ int main() {
 
     /** Hollow Images **/
     Options hollowImageOptions;
-    hollowImageOptions.ALPHA_BLUR = 0;
-    hollowImageOptions.ALPHA_GRADIENT = 0;
+    hollowImageOptions.ALPHA_BLUR = 1;
+    hollowImageOptions.ALPHA_GRADIENT = 100;
     hollowImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
     hollowImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
     //processImage("./examples/image1.bmp", hollowImageOptions);
     //processImage("../examples/image2.bmp", hollowImageOptions);
-    processImage("./examples/image3.bmp", hollowImageOptions);
+    processImage("./examples/diamond.bmp", hollowImageOptions);
     //processImage("../bitmaps/image2.bmp", hollowImageOptions, "../outputs/grayscale/image2.csv", "../outputs/hough/image2.csv");
     //processImage("../bitmaps/image3.bmp", hollowImageOptions, "../outputs/grayscale/image3.csv", "../outputs/hough/image3.csv");
 

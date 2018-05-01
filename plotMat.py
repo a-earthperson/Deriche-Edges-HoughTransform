@@ -1,11 +1,8 @@
 import os
 import glob
 import errno
-import scipy.misc
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.cbook as cbook
 
 def createdir(dir):
     if not os.path.exists(dir):
@@ -26,6 +23,7 @@ def genimage(src, outpath):
     plt.imsave(fname=outpath+'/'+filename, arr=img, vmin=np.min(img), vmax=np.max(img), format='png', cmap=cmap)
     plt.imshow(img, cmap=cmap, vmin=np.min(img), vmax=np.max(img), interpolation='none')
     plt.title(filename)
+    plt.colorbar()
     plt.show()
     return img
 

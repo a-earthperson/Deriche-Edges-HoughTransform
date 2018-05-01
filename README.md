@@ -5,14 +5,18 @@
 
 ## Implementation Pipeline
 
-### Stage 0: Read Bitmap as 2D matrix
+### Stage 1: Read Bitmap as Matrix
 
-### Stage 1: Deriche Blur Filter
+### Stage 2: Deriche Blur Filter
 
-### Stage 2: Deriche Edge Detector
+### Stage 3: Otsu's Thresholder
 
-### Stage 3: Hysteresis Thresholding
+### Stage 4: Deriche Edge Detector
 
-### Stage 4:
+### Stage 5: Hysteresis Thresholding
+
+### Stage 6: Hough Transform
+
+### Stage 7: Edge Count & Orientation
 
 ## Examples

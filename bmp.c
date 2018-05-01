@@ -35,13 +35,11 @@ unsigned char* imread(char* name) {
     datasize = InfoHeader.Width*InfoHeader.Height*3;
 
     padding = (4 - ((InfoHeader.Width*3) % 4)) % 4 ;
-    pad = malloc(padding*sizeof(unsigned char));
 
-    bitmap = (unsigned char *) malloc(datasize);
+    pad = (unsigned char *) malloc(padding * sizeof(unsigned char));
+    bitmap = (unsigned char *) malloc((size_t) datasize);
 
-
-
-    if (!bitmap)
+    if (bitmap == NULL || pad == NULL)
     {
         printf("out of memory!\n");
         exit(1);
