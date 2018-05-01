@@ -11,7 +11,7 @@
 
 ### Stage 3: Otsu's Thresholder
 
-### Stage 4: Deriche Edge Detector
+### Stage 4: Deriche Gradient Filter
 
 ### Stage 5: Hysteresis Thresholding
 
