@@ -1,46 +1,23 @@
 //
-// Created by Arjun on 2/23/17.
+// Created by Arjun on 4/30/18.
 //
 
-#ifndef HOUGHTRANSFORM_DERICHE_H
-#define HOUGHTRANSFORM_DERICHE_H
+#include "include/deriche.h"
 
-#include "mat.h"
-#include "hough.h"
-
-#define MAGNITUDE_LIMIT 255.0
-
-typedef struct {
-    double a1;
-    double a2;
-    double a3;
-    double a4;
-    double a5;
-    double a6;
-    double a7;
-    double a8;
-    double b1;
-    double b2;
-    double c1;
-    double c2;
-} Coeffs;
-
-typedef struct {
-    Coeffs *blur;
-    Coeffs *xGradient;
-    Coeffs *yGradient;
-} DericheCoeffs;
-
-
+/**
+ * @brief Applies the Deriche Filter to the source image by running the following passes: L-to-R horizontal, R-to-L
+ * horizontal, T-to-B vertical, B-to-T vertical. Output is stored inplace in the source matrix.
+ * @param image Source Mat, Output Mat
+ * @param coeffs Deriche coefficients pre-generated with known alpha
+ */
 void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
 
-    const int height = (int)(image->height);
-    const int width  = (int)(image->width);
-
-    const int pixel_count = width * height;
+    const unsigned long height = image->height;
+    const unsigned long width  = image->width;
 
     Mat *out = Mat_generate(width, height, 0);
-    int i, j;
+
+    long i = 0, j = 0;
 
     // horizontal pass
     for(i = 0; i < height; i++)
@@ -50,7 +27,7 @@ void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
         // left to right pass
         for(j = 0; j < width; j++)
         {
-            int idx = (i * width) + j;
+            unsigned long idx = (i * width) + j;
             X_1 = X_0;
             X_0 = image->data[idx];
             Y_2 = Y_1;
@@ -70,7 +47,7 @@ void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
         // right to left pass
         for(j = (width - 1); j>= 0; j--)
         {
-            int idx = (i * width) + j;
+            unsigned long idx = (i * width) + j;
             X_2 = X_1;
             X_1 = X_0;
             X_0 = image->data[idx];
@@ -92,7 +69,7 @@ void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
         // top to bottom
         for(i = 0; i < height ; i++)
         {
-            int idx = (i * width) + j;
+            unsigned long idx = (i * width) + j;
             X_1 = X_0;
             X_0 = out->data[idx];
             Y_2 = Y_1;
@@ -111,7 +88,7 @@ void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
         // bottom to top
         for(i = (height - 1); i >= 0; i--)
         {
-            int idx = (i * width) + j;
+            unsigned long idx = (i * width) + j;
             X_2 = X_1;
             X_1 = X_0;
             X_0 = out->data[idx];
@@ -121,25 +98,21 @@ void applyDericheFilter(Mat *image, const Coeffs *coeffs) {
             image->data[idx] = coeffs->c2 * (Y_0 + image->data[idx]);
         }
     }
-
     Mat_destroy(out);
-    return;
 }
-
-
 
 void hysteresisConnect(Mat *image, const size_t x, const size_t y, const int low) {
 
     const size_t width = image->width;
     const size_t height = image->height;
 
-    size_t xx, yy;
+    long xx, yy;
 
     for (xx = x - 1; xx <= x + 1; xx++)
     {
         for (yy = y - 1; yy <= y + 1; yy++)
         {
-            if ((xx < width) && (yy < height) && (xx >= 0) & (yy >= 0) & (xx != x) & (yy != y))
+            if ((xx < width) && (yy < height) && (xx >= 0) && (yy >= 0) && (xx != x) && (yy != y))
             {
                 const size_t idx = (yy * width) + xx;
                 const float pxl_val = image->data[idx];
@@ -200,20 +173,19 @@ unsigned int hysteresisThreshold(Mat *image, const int low, const int high) {
     return numFound;
 }
 
-double fillBlurCoeffs(Coeffs *blurCoeffs, const float ALPHA) {
+float fillBlurCoeffs(Coeffs *blurCoeffs, const float ALPHA) {
 
     if(blurCoeffs == NULL)
     {
         exit(1);
-        return -1;
     }
 
-    const double k = (cosh(ALPHA) - 1.0f)/(ALPHA + sinh(ALPHA));
-    const double expNegOneAlpha = exp(-1.0 * ALPHA);
-    const double expNegTwoAlpha = exp(-2.0 * ALPHA);
+    const float k = (float)((cosh(ALPHA) - 1.0f)/(ALPHA + sinh(ALPHA)));
+    const float expNegOneAlpha = expf(-1.0f * ALPHA);
+    const float expNegTwoAlpha = expf(-2.0f * ALPHA);
 
-    const double k_expNegOneAlpha = k * expNegOneAlpha;
-    const double k_expNegOneAlpha_A = k_expNegOneAlpha * ALPHA;
+    const float k_expNegOneAlpha = k * expNegOneAlpha;
+    const float k_expNegOneAlpha_A = k_expNegOneAlpha * ALPHA;
 
 
     /** Prepare co-efficients for blurring pass **/
@@ -225,16 +197,20 @@ double fillBlurCoeffs(Coeffs *blurCoeffs, const float ALPHA) {
     blurCoeffs->a6 = blurCoeffs->a2;
     blurCoeffs->a7 = blurCoeffs->a3;
     blurCoeffs->a8 = blurCoeffs->a4;
-    blurCoeffs->b1 = 2.0 * expNegOneAlpha;
+    blurCoeffs->b1 = 2.0f * expNegOneAlpha;
     blurCoeffs->b2 = -(expNegTwoAlpha);
-    blurCoeffs->c1 = 1.0;
-    blurCoeffs->c2 = 1.0;
+    blurCoeffs->c1 = 1.0f;
+    blurCoeffs->c2 = 1.0f;
 
     // return this for Xgrad_c1 calculation
-    return (1.0 - expNegOneAlpha);
+    return (1.0f - expNegOneAlpha);
 }
-
-DericheCoeffs *DericheCoeffs_generate(const double ALPHA) {
+/**
+ *
+ * @param ALPHA
+ * @return
+ */
+DericheCoeffs *DericheCoeffs_generate(const float ALPHA) {
 
     Coeffs *blurCoeffs = (Coeffs *) malloc(sizeof(Coeffs));
     Coeffs *xDerivativeCoeffs = (Coeffs *) malloc(sizeof(Coeffs));
@@ -249,13 +225,13 @@ DericheCoeffs *DericheCoeffs_generate(const double ALPHA) {
     }
 
     /** generate the blur coefficients **/
-    const double oneMinusExpNegOneAlpha = fillBlurCoeffs(blurCoeffs, ALPHA);
+    const float oneMinusExpNegOneAlpha = fillBlurCoeffs(blurCoeffs, ALPHA);
 
     /** Prepare co-efficients for x-derivative pass **/
-    xDerivativeCoeffs->a1 =  0.0;
-    xDerivativeCoeffs->a2 =  1.0;
-    xDerivativeCoeffs->a3 = -1.0;
-    xDerivativeCoeffs->a4 =  0.0;
+    xDerivativeCoeffs->a1 =  0.0f;
+    xDerivativeCoeffs->a2 =  1.0f;
+    xDerivativeCoeffs->a3 = -1.0f;
+    xDerivativeCoeffs->a4 =  0.0f;
     xDerivativeCoeffs->a5 = blurCoeffs->a1;
     xDerivativeCoeffs->a6 = blurCoeffs->a2;
     xDerivativeCoeffs->a7 = blurCoeffs->a3;
@@ -263,7 +239,7 @@ DericheCoeffs *DericheCoeffs_generate(const double ALPHA) {
     xDerivativeCoeffs->b1 = blurCoeffs->b1;
     xDerivativeCoeffs->b2 = blurCoeffs->b2;
     xDerivativeCoeffs->c1 = -(oneMinusExpNegOneAlpha * oneMinusExpNegOneAlpha);
-    xDerivativeCoeffs->c2 =  1.0;
+    xDerivativeCoeffs->c2 =  1.0f;
 
     /** Prepare co-efficients for y-derivative pass **/
     yDerivativeCoeffs->a1 = xDerivativeCoeffs->a5;
@@ -287,11 +263,11 @@ DericheCoeffs *DericheCoeffs_generate(const double ALPHA) {
 }
 
 void DericheCoeffs_destroy(DericheCoeffs *dericheCoeffs) {
+
     if(dericheCoeffs == NULL || dericheCoeffs->blur == NULL || dericheCoeffs->xGradient == NULL || dericheCoeffs->yGradient == NULL)
     {
         return;
     }
-
     free(dericheCoeffs->blur);
     free(dericheCoeffs->xGradient);
     free(dericheCoeffs->yGradient);
@@ -320,10 +296,10 @@ void calculateGradientIntensities(Mat *xGrad, Mat* yGrad) {
     for(i = 0; i < pixel_count; i++)
     {
         const float gradient = hypotf(xGrad->data[i], yGrad->data[i]);
-        const float direction = (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
+        //const float direction = (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
         if(gradient > 0)
         {
-            const float CC_DIR = (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
+            const float CC_DIR = (float) (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
             if(CC_DIR <=1 || CC_DIR > 7)  directions[i] = 0; // 0 degrees is 0
             if(CC_DIR > 1 && CC_DIR <= 3) directions[i] = 2; // 45 degrees is 2
             if(CC_DIR > 3 && CC_DIR <= 5) directions[i] = 4; // 90 degrees is 4
@@ -402,8 +378,8 @@ void performMagnitudeSupression(Mat *xGrad, Mat* yGrad) {
         return;
 
 
-    const unsigned int height = xGrad->height;
-    const unsigned int width = xGrad->width;
+    const size_t height = xGrad->height;
+    const size_t width = xGrad->width;
 
     const size_t pixel_count = width * height;
 
@@ -420,14 +396,14 @@ void performMagnitudeSupression(Mat *xGrad, Mat* yGrad) {
     for(i = 0; i < pixel_count; i++)
     {
         gradients[i] = hypotf(xGrad->data[i], yGrad->data[i]);
-        directions[i] = (fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
+        directions[i] = (float)(fmod(atan2f(xGrad->data[i], yGrad->data[i]) + M_PI, M_PI) / M_PI) * 8.0f;
     }
 
     for (i = 1; i < width - 1; i++)
     {
         for (j = 1; j < height - 1; j++)
         {
-            const unsigned int cc = i + width * j;
+            const size_t cc = i + width * j;
             const float     G_cc = gradients[cc];
 
             /** Nothing to do here if G_cc is not 255.0! **/
@@ -438,14 +414,14 @@ void performMagnitudeSupression(Mat *xGrad, Mat* yGrad) {
 //            }
 
             /** Set indices for 8-neighbors **/
-            const unsigned int nn = cc - width;
-            const unsigned int ss = cc + width;
-            const unsigned int ww = cc + 1;
-            const unsigned int ee = cc - 1;
-            const unsigned int nw = nn + 1;
-            const unsigned int ne = nn - 1;
-            const unsigned int sw = ss + 1;
-            const unsigned int se = ss - 1;
+            const size_t nn = cc - width;
+            const size_t ss = cc + width;
+            const size_t ww = cc + 1;
+            const size_t ee = cc - 1;
+            const size_t nw = nn + 1;
+            const size_t ne = nn - 1;
+            const size_t sw = ss + 1;
+            const size_t se = ss - 1;
 
             /** get gradients 8-neighbors **/
             const float G_ee = (i > 0)                                 ? gradients[ee] : 0.0f;
@@ -473,5 +449,27 @@ void performMagnitudeSupression(Mat *xGrad, Mat* yGrad) {
     free(directions);
 }
 
+void writeCoeffs(Coeffs *coeffs, char *name) {
+    printf("%s\n", name);
+    printf("a1: %f\n", coeffs->a1);
+    printf("a2: %f\n", coeffs->a2);
+    printf("a3: %f\n", coeffs->a3);
+    printf("a4: %f\n", coeffs->a4);
+    printf("a5: %f\n", coeffs->a5);
+    printf("a6: %f\n", coeffs->a6);
+    printf("a7: %f\n", coeffs->a7);
+    printf("a8: %f\n", coeffs->a8);
+    printf("b1: %f\n", coeffs->b1);
+    printf("b2: %f\n", coeffs->b2);
+    printf("c1: %f\n", coeffs->c1);
+    printf("c2: %f\n", coeffs->c2);
+}
 
-#endif //HOUGHTRANSFORM_DERICHE_H
+void writeDericheCoeffs(DericheCoeffs *coeffs) {
+    if(coeffs == NULL)
+        return;
+
+    if(coeffs->blur != NULL)      writeCoeffs(coeffs->blur, "Blur Coeffs");
+    if(coeffs->xGradient != NULL) writeCoeffs(coeffs->xGradient, "X-Gradient Coeffs");
+    if(coeffs->yGradient != NULL) writeCoeffs(coeffs->yGradient, "Y-Gradient Coeffs");
+}

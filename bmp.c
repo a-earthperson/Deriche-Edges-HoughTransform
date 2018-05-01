@@ -1,35 +1,10 @@
-#ifndef BMP
-#define BMP
+//
+// Created by Arjun on 4/30/18.
+//
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <error.h>
+#include "include/bmp.h"
 
-#pragma pack(1)
-struct BitMap
-{
-    unsigned short int Type;
-    unsigned int Size;
-    unsigned short int Reserved1, Reserved2;
-    unsigned int Offset;
-} Header;
-
-struct BitMapInfo
-{
-    unsigned int Size;
-    int Width, Height;
-    unsigned short int Planes;
-    unsigned short int Bits;
-    unsigned int Compression;
-    unsigned int ImageSize;
-    int xRes, yRes;
-    unsigned int Colors;
-    unsigned int ImptColors;
-} InfoHeader;
-
-
-unsigned char* imread(char* name)
-{
+unsigned char* imread(char* name) {
 
     unsigned char *bitmap;
     FILE *BMP_in = fopen (name, "rb");
@@ -96,8 +71,8 @@ unsigned char* imread(char* name)
     return bitmap;
 }
 
-void imshow(char* name,unsigned char* bitmap)
-{
+void imshow(char* name,unsigned char* bitmap) {
+
     FILE *BMP_out;
     int filesize, datasize, i;
     int padding;
@@ -152,5 +127,3 @@ void imshow(char* name,unsigned char* bitmap)
     fclose(BMP_out);
 
 }
-
-#endif

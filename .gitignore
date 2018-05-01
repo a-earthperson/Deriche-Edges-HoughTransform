@@ -2,6 +2,8 @@ cmake-build-debug/
 .idea/
 .DS_Store
 
-bitmaps/*
+build/
 generated/*
 examples/*.csv
+
+edgeDetect

@@ -1,14 +1,8 @@
 //
-// Created by arjun on 4/24/18.
+// Created by Arjun on 4/30/18.
 //
 
-#ifndef DERICHEHOUGHTRANSFORM_OTSU_H
-#define DERICHEHOUGHTRANSFORM_OTSU_H
-
-
-#include "mat.h"
-#include <math.h>
-#include <error.h>
+#include "include/otsu.h"
 
 unsigned int computeThreshold(Mat* image) {
 
@@ -82,5 +76,3 @@ unsigned int computeThreshold(Mat* image) {
 
     return threshold;
 }
-
-#endif //DERICHEHOUGHTRANSFORM_OTSU_H

@@ -1,32 +1,8 @@
 //
-// Created by Arjun on 2/23/17.
+// Created by Arjun on 4/30/18.
 //
 
-#ifndef HOUGHTRANSFORM_HELPER_H
-#define HOUGHTRANSFORM_HELPER_H
-
-#define MAX_BRIGHTNESS 255.0f
-
-#include "bmp.h"
-#include <math.h>
-#include <stdlib.h>
-#include <float.h>
-
-typedef struct
-{
-    size_t width;
-    size_t height;
-    float *data;
-} Mat;
-
-typedef struct
-{
-    float ALPHA_BLUR;
-    float ALPHA_GRADIENT;
-    unsigned int HYSTERESIS_THRESHOLD_LOW;
-    unsigned int HYSTERESIS_THRESHOLD_HIGH;
-} Options;
-
+#include "include/mat.h"
 
 /**
  * Writes the @typedef Mat datatype to CSV
@@ -242,4 +218,3 @@ Mat *imreadGray(char* name) {
     free(BMPin);
     return grayMatrix;
 }
-#endif //HOUGHTRANSFORM_HELPER_H
