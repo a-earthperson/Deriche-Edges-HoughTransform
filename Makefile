@@ -23,6 +23,7 @@ $(ODIR)/%.o: %.c $(DEPS)
 .PHONY: run
 run: edgeDetect
 	./edgeDetect
+	python plotMat.py
 
 .PHONY: all
 all: run
