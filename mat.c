@@ -1,5 +1,5 @@
 //
-// Created by Arjun on 4/30/18.
+// Created by Arjun on 2/23/17.
 //
 
 #include "include/mat.h"
@@ -144,14 +144,15 @@ float normalizeImageWithMax(Mat *image, const float max, const unsigned char inv
     return cmax;
 }
 
-void Mat_multiply(Mat *x, Mat *y) {
+void Mat_elementwise(Mat* x, Mat*y, float elementwise (float, float)) {
     size_t i;
     const size_t n = x->width * x->height;
     for(i = 0; i < n; i++)
     {
-        y->data[i] = x->data[i] * y->data[i];
+        y->data[i] = elementwise(x->data[i], y->data[i]);
     }
 }
+float multipy(float x, float y) {return x*y;}
 
 float normalizeImage(Mat *image) {
 

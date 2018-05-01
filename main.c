@@ -48,16 +48,11 @@ void processImage(char *inputFile, const Options filterOptions) {
         applyDericheFilter(yGradient, gradients->yGradient);
         if(VERBOSE) Mat2CSV(inputFile, yGradient, ".ygrad.csv");
 
+        /** Step 3c :  apply element-wise hypot function **/
+        Mat_elementwise(xGradient, yGradient, &hypotf);
+        if(VERBOSE) Mat2CSV(inputFile, grayedImage, ".gradOnly.csv");
 
-        /** Step 3c: Intensity & Gradient calculation with non-maximal supression **/
-        // Calculate the gradient intensities, storing the result in yGradient
-        //alculateGradientIntensities(xGradient, yGradient);
-        performMagnitudeSupression(xGradient, yGradient);
-        if(VERBOSE) Mat2CSV(inputFile, xGradient, ".gradOnly.csv");
-        if(VERBOSE) Mat2CSV(inputFile, yGradient, ".gradNonMaximal.csv");
-
-        grayedImage = xGradient;
-        Mat_destroy(yGradient);
+        Mat_destroy(xGradient);
         DericheCoeffs_destroy(gradients);
     }
 
@@ -68,21 +63,14 @@ void processImage(char *inputFile, const Options filterOptions) {
         if(VERBOSE) Mat2CSV(inputFile, grayedImage, ".hysteresis.csv");
     }
 
-    /** Step 5: Linear Hough Transform **/
+    /** Step 5a: Linear Hough Transform **/
     Mat *houghImage = HoughTransform(grayedImage);
     if(VERBOSE) Mat2CSV(inputFile, houghImage, ".hough.csv");
 
-
-//    Mat *xHough = Mat_copy(houghImage);
-//    applyDericheFilter(xHough, DericheCoeffs_generate(100)->xGradient);
-//
-//    Mat *yHough = Mat_copy(houghImage);
-//    applyDericheFilter(yHough, DericheCoeffs_generate(100)->yGradient);
-//
-//    performMagnitudeSupression(xHough, yHough);
-//    computeThreshold(xHough);
-//    Mat_multiply(houghImage, xHough);
-//    if(VERBOSE) Mat2CSV(inputFile, xHough, ".hough-gradOnly.csv");
+    /** Step 5b: Linear Hough Transform **/
+    Mat_elementwise(houghImage, houghImage, &multipy);
+    normalizeImage(houghImage);
+    if(VERBOSE) Mat2CSV(inputFile, houghImage, ".hough-powers.csv");
 
     /** Step 6: Polygon edge count **/
     printf("Polygon Edge Count  : %d\n", -1);
@@ -90,69 +78,33 @@ void processImage(char *inputFile, const Options filterOptions) {
     /** Step 7: Polygon orientation **/
     printf("Polygon Orientation : %f\n", -1.0f);
 
-
     Mat_destroy(houghImage);
     Mat_destroy(grayedImage);
 }
 
 int main() {
+    
+    Options imageOptions;
+    imageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
+    imageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
 
-    //mem_init();
+    /** Hollow polygons **/
+    imageOptions.ALPHA_BLUR = 0;
+    imageOptions.ALPHA_GRADIENT = 0;
+    processImage("./examples/image1.bmp", imageOptions);
+    processImage("./examples/image2.bmp", imageOptions);
+    processImage("./examples/image3.bmp", imageOptions);
 
-    /** Hollow Images **/
-    Options hollowImageOptions;
-    hollowImageOptions.ALPHA_BLUR = 1;
-    hollowImageOptions.ALPHA_GRADIENT = 100;
-    hollowImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
-    hollowImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
-    //processImage("./examples/image1.bmp", hollowImageOptions);
-    //processImage("../examples/image2.bmp", hollowImageOptions);
-    processImage("./examples/diamond.bmp", hollowImageOptions);
-    //processImage("../bitmaps/image2.bmp", hollowImageOptions, "../outputs/grayscale/image2.csv", "../outputs/hough/image2.csv");
-    //processImage("../bitmaps/image3.bmp", hollowImageOptions, "../outputs/grayscale/image3.csv", "../outputs/hough/image3.csv");
-
-    /** Hollow Noisy Images **/
-    Options hollowNoisyImageOptions;
-    hollowNoisyImageOptions.ALPHA_BLUR = 0.0;
-    hollowNoisyImageOptions.ALPHA_GRADIENT = 50.0;
-    hollowNoisyImageOptions.HYSTERESIS_THRESHOLD_LOW = 100;
-    hollowNoisyImageOptions.HYSTERESIS_THRESHOLD_HIGH = 150;
-    //processImage("../bitmaps/noisy2.bmp", hollowNoisyImageOptions, "../outputs/grayscale/noisy2.csv", "../outputs/hough/noisy2.csv");
-
-    /** Hollow - Hand Drawn images **/
-    Options hollowHandDrawnImageOptions;
-    hollowHandDrawnImageOptions.ALPHA_BLUR = 1.0;
-    hollowHandDrawnImageOptions.ALPHA_GRADIENT = 0.0;
-    hollowHandDrawnImageOptions.HYSTERESIS_THRESHOLD_LOW = 100;
-    hollowHandDrawnImageOptions.HYSTERESIS_THRESHOLD_HIGH = 100;
-    //processImage("../bitmaps/hexagon.bmp",  hollowHandDrawnImageOptions, "../outputs/grayscale/hexagon.csv", "../outputs/hough/hexagon.csv");
-    //processImage("../bitmaps/triangle.bmp", hollowHandDrawnImageOptions, "../outputs/grayscale/triangle.csv", "../outputs/hough/triangle.csv");
-
-    /** Solid - well defined polygons **/
-    Options solidImageOptions;
-    solidImageOptions.ALPHA_BLUR = 200.0;
-    solidImageOptions.ALPHA_GRADIENT = 2.0;
-    solidImageOptions.HYSTERESIS_THRESHOLD_LOW = 20;
-    solidImageOptions.HYSTERESIS_THRESHOLD_HIGH = 50;
-    //processImage("../bitmaps/rubix.bmp", solidImageOptions, "../outputs/grayscale/rubix.csv", "../outputs/hough/rubix.csv");
-    ///processImage("../bitmaps/peacock.bmp", solidImageOptions, "../outputs/grayscale/peacock.csv", "../outputs/hough/peacock.csv");
+    /** Hollow Noisy (Handrawn) polygons **/
+    imageOptions.ALPHA_BLUR = 2;
+    imageOptions.ALPHA_GRADIENT = 0;
+    processImage("./examples/triangle.bmp", imageOptions);
+    processImage("./examples/hexagon.bmp", imageOptions);
 
     /** Solid - Handrawn polygons **/
-    Options solidHandDrawnImageOptions;
-    solidHandDrawnImageOptions.ALPHA_BLUR = 0.5;
-    solidHandDrawnImageOptions.ALPHA_GRADIENT = 10.0;
-    solidHandDrawnImageOptions.HYSTERESIS_THRESHOLD_LOW = 0;
-    solidHandDrawnImageOptions.HYSTERESIS_THRESHOLD_HIGH = 0;
-    //processImage("../examples/diamond.bmp", solidHandDrawnImageOptions);
-//    processImage("../bitmaps/diamond.bmp", solidHandDrawnImageOptions, "../outputs/grayscale/diamond.csv", "../outputs/hough/diamond.csv");
-
-    /** Partially filled, handrawn polygon **/
-    Options partiallyFilledHandDrawnImageOptions;
-    partiallyFilledHandDrawnImageOptions.ALPHA_BLUR = 1.0;
-    partiallyFilledHandDrawnImageOptions.ALPHA_GRADIENT = 100.0;
-    partiallyFilledHandDrawnImageOptions.HYSTERESIS_THRESHOLD_LOW = 100;
-    partiallyFilledHandDrawnImageOptions.HYSTERESIS_THRESHOLD_HIGH = 180;
-    //processImage("../bitmaps/rick_and_morty.bmp", partiallyFilledHandDrawnImageOptions, "../outputs/grayscale/rick_and_morty.csv", "../outputs/hough/rick_and_morty.csv");
+    imageOptions.ALPHA_BLUR = 1;
+    imageOptions.ALPHA_GRADIENT = 10;
+    processImage("./examples/diamond.bmp", imageOptions);
 
     return 0;
 }

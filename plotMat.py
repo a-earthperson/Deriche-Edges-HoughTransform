@@ -21,10 +21,10 @@ def genimage(src, outpath):
     img = csvtoarr(src)
     cmap = 'jet' if "hough" in filename else 'gray'
     plt.imsave(fname=outpath+'/'+filename, arr=img, vmin=np.min(img), vmax=np.max(img), format='png', cmap=cmap)
-    plt.imshow(img, cmap=cmap, vmin=np.min(img), vmax=np.max(img), interpolation='none')
-    plt.title(filename)
-    plt.colorbar()
-    plt.show()
+    #plt.imshow(img, cmap=cmap, vmin=np.min(img), vmax=np.max(img), interpolation='none')
+    #plt.title(filename)
+    #plt.colorbar()
+    #plt.show()
     return img
 
 if __name__ == "__main__":

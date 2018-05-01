@@ -27,6 +27,7 @@ typedef struct
     unsigned int HYSTERESIS_THRESHOLD_HIGH;
 } Options;
 
+typedef float (*elementwise)(float, float);
 
 /**
  * Writes the @typedef Mat datatype to CSV
@@ -46,6 +47,10 @@ Mat *Mat_generate(size_t width, size_t height, unsigned int zeroed);
 
 Mat *Mat_copy(Mat *src);
 
+float multipy(float x, float y);
+
+void Mat_elementwise(Mat* x, Mat*y, float elementwise (float, float));
+
 /**
  * Free all memory associated with the @typedef Mat object
  * @param toDestroy
@@ -53,8 +58,6 @@ Mat *Mat_copy(Mat *src);
 void Mat_destroy(Mat *toDestroy);
 
 float normalizeImageWithMax(Mat *image, float max, unsigned char inverted);
-
-void Mat_multiply(Mat *x, Mat *y);
 
 float normalizeImage(Mat *image);
 
