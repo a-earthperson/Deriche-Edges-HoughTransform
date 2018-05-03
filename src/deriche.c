@@ -2,7 +2,7 @@
 // Created by Arjun on 4/30/18.
 //
 
-#include "include/deriche.h"
+#include "deriche.h"
 
 /**
  * @brief Applies the Deriche Filter to the source image by running the following passes: L-to-R horizontal, R-to-L

@@ -27,7 +27,8 @@ typedef struct
     unsigned int HYSTERESIS_THRESHOLD_HIGH;
 } Options;
 
-typedef float (*elementwise)(float, float);
+typedef float (*elementwise2)(float, float);
+typedef float (*elementwise1)(float);
 
 /**
  * Writes the @typedef Mat datatype to CSV
@@ -49,7 +50,11 @@ Mat *Mat_copy(Mat *src);
 
 float multipy(float x, float y);
 
-void Mat_elementwise(Mat* x, Mat*y, float elementwise (float, float));
+void suppressThreshold(Mat * mat, float threshold);
+
+void Mat_elementwise2(Mat *x, Mat *y, float elementwise2(float, float));
+
+void Mat_elementwise1(Mat *x, float elementwise1(float));
 
 /**
  * Free all memory associated with the @typedef Mat object
@@ -66,7 +71,7 @@ float normalizeImage(Mat *image);
  * @param image_data
  * @return
  */
-Mat *color2gray(unsigned char *image_data);
+Mat *color2gray(const unsigned char *image_data, size_t width, size_t height);
 
 /**
  * Performs the same work as @fn color2gray, but ensures that BMP related memory is freed once the matrix has been created

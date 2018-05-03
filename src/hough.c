@@ -2,7 +2,7 @@
 // Created by Arjun on 4/30/18.
 //
 
-#include "include/hough.h"
+#include "hough.h"
 
 Mat *HoughTransform(const Mat *grayscale_img) {
 
@@ -19,7 +19,7 @@ Mat *HoughTransform(const Mat *grayscale_img) {
     /** initialize output matrix with parameters **/
     const size_t width = 180;
     const size_t height = 2 * diag_len;
-    printf("hough image length:%lu, %lu\n", height, width);
+    //printf("hough image length:%lu, %lu\n", height, width);
 
     /** create matrix **/
     Mat *houghMatrix = Mat_generate(width, height, 1);

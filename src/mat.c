@@ -2,7 +2,7 @@
 // Created by Arjun on 2/23/17.
 //
 
-#include "include/mat.h"
+#include "mat.h"
 
 /**
  * Writes the @typedef Mat datatype to CSV
@@ -68,7 +68,7 @@ Mat *Mat_generate(const size_t width, const size_t height, const unsigned int ze
             data[i] = 0.0f;
     }
 
-    printf("Bytes assigned for Mat(w:%lu  x h: %lu): %lu\n", width, height, pixel_count * sizeof(float));
+    //printf("Bytes assigned for Mat(w:%lu  x h: %lu): %lu\n", width, height, pixel_count * sizeof(float));
 
     newMatrix->width = width;
     newMatrix->height = height;
@@ -144,7 +144,7 @@ float normalizeImageWithMax(Mat *image, const float max, const unsigned char inv
     return cmax;
 }
 
-void Mat_elementwise(Mat* x, Mat*y, float elementwise (float, float)) {
+void Mat_elementwise2(Mat *x, Mat *y, float elementwise(float, float)) {
     size_t i;
     const size_t n = x->width * x->height;
     for(i = 0; i < n; i++)
@@ -152,7 +152,26 @@ void Mat_elementwise(Mat* x, Mat*y, float elementwise (float, float)) {
         y->data[i] = elementwise(x->data[i], y->data[i]);
     }
 }
+
+void Mat_elementwise1(Mat *x, float elementwise(float)) {
+    size_t i;
+    const size_t n = x->width * x->height;
+    for(i = 0; i < n; i++)
+    {
+        x->data[i] = elementwise(x->data[i]);
+    }
+}
+
 float multipy(float x, float y) {return x*y;}
+
+void suppressThreshold(Mat * image, float threshold) {
+    const size_t n = image->height * image->width;
+    size_t i;
+    for(i = 0; i < n; i++)
+    {
+        image->data[i] = (roundf(image->data[i]) > threshold) ? 255 : 0;
+    }
+}
 
 float normalizeImage(Mat *image) {
 
@@ -181,9 +200,9 @@ float normalizeImage(Mat *image) {
  * @param image_data
  * @return
  */
-Mat *color2gray(unsigned char *image_data) {
+Mat *color2gray(const unsigned char *image_data, const size_t width, const size_t height) {
 
-    Mat *grayImage = Mat_generate((size_t) InfoHeader.Width, (size_t) InfoHeader.Height, 0);
+    Mat *grayImage = Mat_generate(width, height, 0);
     const size_t pixel_count = grayImage->width * grayImage->height;
 
     /* calculate brightness for all pixels & find the brightest pixel */
@@ -214,8 +233,8 @@ Mat *color2gray(unsigned char *image_data) {
  * @return
  */
 Mat *imreadGray(char* name) {
-    unsigned char *BMPin = imread(name);
-    Mat *grayMatrix = color2gray(BMPin);
-    free(BMPin);
+    BitMapHeader *BMPin = imread(name);
+    Mat *grayMatrix = color2gray(BMPin->bitmap, (size_t) BMPin->infoHeader->Width, (size_t) BMPin->infoHeader->Height);
+    BitMapHeader_destroy(BMPin);
     return grayMatrix;
 }

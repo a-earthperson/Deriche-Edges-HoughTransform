@@ -2,7 +2,7 @@
 // Created by Arjun on 4/30/18.
 //
 
-#include "include/otsu.h"
+#include "otsu.h"
 
 unsigned int computeThreshold(Mat* image) {
 
@@ -65,14 +65,7 @@ unsigned int computeThreshold(Mat* image) {
 
     free(histogram);
 
-    if(threshold > 0)
-    {
-        for(i = 0; i < pixels; i++)
-        {
-            image->data[i] = (image->data[i] > threshold) ? 255 : 0;
-        }
-    }
-
+    suppressThreshold(image, threshold);
 
     return threshold;
 }

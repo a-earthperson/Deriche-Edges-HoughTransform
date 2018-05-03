@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #pragma pack(1)
-struct BitMap
+typedef struct BitMap
 {
     unsigned short int Type;
     unsigned int Size;
@@ -13,7 +13,7 @@ struct BitMap
     unsigned int Offset;
 } Header;
 
-struct BitMapInfo
+typedef struct BitMapInfo
 {
     unsigned int Size;
     int Width, Height;
@@ -26,8 +26,17 @@ struct BitMapInfo
     unsigned int ImptColors;
 } InfoHeader;
 
+typedef struct BitMapDetails
+{
+    Header *header;
+    InfoHeader *infoHeader;
+    unsigned char *bitmap;
+} BitMapHeader;
 
-unsigned char* imread(char* name);
+
+BitMapHeader *imread(char* name);
+
+void BitMapHeader_destroy(BitMapHeader *bmp);
 
 void imshow(char* name,unsigned char* bitmap);
 

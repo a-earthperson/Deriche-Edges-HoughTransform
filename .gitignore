@@ -6,4 +6,18 @@ build/
 generated/*
 examples/*.csv
 
-edgeDetect
+edgedetect
+*.o
+
+*.log
+*.tar.gz
+*.cache
+*.deps
+*.*~
+
+config.status
+.dirstamp
+compile
+missing
+depcomp
+install-sh
