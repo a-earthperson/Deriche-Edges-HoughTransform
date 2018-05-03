@@ -1,0 +1,59 @@
+/* Project Unfocused */
+project {
+	cursor: pointer;
+	display:block;
+	padding:20px;
+	background-color: #fafafa;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border: 1px solid #ddd;
+	margin: 20px 0px 20px 0px;
+}
+
+project > i {
+  float:left;
+  margin-right: 8px;
+  color:#aaa;
+}
+/* Project focused */
+project:hover, project:focus {
+	background-color: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+/* Project heading - unfocused */
+project > heading {
+  color:#d85b70;
+	display: block;
+	font-weight: bold;
+	font-size:120%;
+	line-height: 24px;
+}
+
+/* Project Description - unfocused */
+project > desc {
+  display: flex;
+  padding:15px 0 20px 0;
+}
+
+/* Project Description - focused */
+project:hover desc, project:focus desc{
+  /*color:#3c78d8;*/
+}
+
+/* Project update status : when project unfocused */
+project > update {
+  font-family:monospace;
+  border-radius: 5px;
+  background-color: #fafafa;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border: 1px solid #ddd;
+  padding:4px;
+}
+
+/* Project update status : Project focused */
+project:hover update, project:focus update {
+	/*background-color: #fafafa;*/
+}
