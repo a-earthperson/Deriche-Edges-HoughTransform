@@ -7,3 +7,11 @@ generated/*
 examples/*.csv
 
 edgeDetect
+autom4te.cache
+compile
+*.log
+*.status
+depcomp
+install-sh
+missing
+src
