@@ -18,25 +18,115 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-	<link rel="stylesheet" href="stylesheets/base.css">
-	<link rel="stylesheet" href="stylesheets/skeleton.css">
+
+  <link rel="stylesheet" href="https://arjun372.github.io/stylesheets/base.css">
+	<link rel="stylesheet" href="https://arjun372.github.io/stylesheets/skeleton.css">
 	<link rel="stylesheet" href="stylesheets/layout.css">
-	<link rel="stylesheet" href="stylesheets/project.css">
+  <link rel="stylesheet" href="stylesheets/toc.css">
 
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css?family=Oswald:700|Open+Sans:400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Oswald:400,700|Open+Sans:400,700" rel="stylesheet">
 	<!--[if lt IE 9]>
 		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 </head>
 <body>
 	<div class="container">
-		<div class="fifteen columns clearfix">
-			<section class="fifteen columns">
-				<hr style="margin:0px 0px 20px 0;">
-				<h1>Convex Polygon Detection</h1>
-			</section>
+		<div class="sixteen columns clearfix">
+      <hr style="margin:0px 0px 20px 0;">
+      <section>
+        <h1>Convex Polygon Detection using Linear Hough Transform</h1>
+        <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+      </section>
+
+
+      <toc>
+        <h5>Contents</h5>
+        <hr>
+        <ol type="i">
+          <li><a href="#1">System Overview</a>
+              <ul style="list-style-type:disc">
+                <li><a href="#2">Stage 1: Read Bitmap as Matrix</a>
+                <li><a href="#3">Stage 2: Deriche Blur Filter</a>
+                <li><a href="#4">Stage 3: Otsu's Thresholder</a>
+                <li><a href="#5">Stage 4: Deriche Gradient Filter</a>
+                <li><a href="#6">Stage 5: Hysteresis Thresholding</a>
+                <li><a href="#7">Stage 6: Hough Transform</a>
+                <li><a href="#8">Stage 7: Edge Count & Orientation</a>
+              </ul>
+          </li>
+          <li><a href="#9">Examples</a></li>
+          <li><a href="#10">Instructions</a></li>
+        </ol>
+      </toc>
+
+    <section>
+    <!-- System Overview -->
+    <h3 id="1">System Overview</h2>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image. Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 1 -->
+    <h4 id="2">Stage 1: Read Bitmap as Matrix</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 2 -->
+    <h4 id="3">Stage 2: Deriche Blur Filter</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 3 -->
+    <h4 id="4">Stage 3: Otsu's Thresholder</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 4 -->
+    <h4 id="5">Stage 4: Deriche Gradient Filter</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 5 -->
+    <h4 id="6">Stage 5: Hysteresis Thresholding</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 6 -->
+    <h4 id="7">Stage 6: Hough Transform</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+    <!--  Stage 7 -->
+    <h4 id="8">Stage 7: Edge Count & Orientation</h4>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+
+
+    </section>
+
+    <section>
+    <h3 id="9">Examples</h2>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image. Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    </section>
+
+    <section>
+    <h3 id="10">Instructions</h2>
+    <hr>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image. Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    <p>Polygon detection framework written in C that implements a deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppresion, and hystersis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+    </section>
+
+    <div class="copyright">
+      <hr>
+      <span>© 2015–2018 Arjun. All rights reserved.</span>
+    </div>
 		</div>
 	</div>
+
 </body>
 </html>

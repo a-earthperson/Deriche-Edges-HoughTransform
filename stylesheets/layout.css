@@ -5,6 +5,30 @@ body {
 	color: rgb(48, 48, 48);
 }
 
+.copyright {
+	text-align: center;
+	width: 100%;
+	font-size: 80%;
+	padding: 0px 0px 20px 0px;
+}
+
+.copyright > hr {
+	margin: 0px 0px 0px 0px;
+}
+
+section > h3 {
+	padding-top: 10px;
+	font-family: "Oswald", "Georgia", "Times New Roman", serif;
+}
+
+section > h4 {
+	font-family: "Oswald", "Georgia", "Times New Roman", serif;
+}
+
+section > hr {
+	margin: 0px 0px 10px 0px;
+}
+
 contactcard > name > sup {
     vertical-align: super;
     font-size: 0.9rem;
@@ -87,12 +111,6 @@ header > h1, section > h1 {
 header > h1 {
 	font-size: 350%;
 	margin-bottom: 20px;
-}
-
-section > h1 {
-	font-size: 140%;
-	line-height: 120%;
-	text-transform: uppercase;
 }
 
 article {
