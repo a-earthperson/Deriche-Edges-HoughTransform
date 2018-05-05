@@ -5,14 +5,14 @@ For a detailed overview, be sure to checkout the guide at the following link:
 [Deriche-Edges-HoughTransform](https://arjun372.github.io/Deriche-Edges-HoughTransform/).
 
 ## The Problem
-Given a bitmap image containing at-most one [convex polygon](https://en.wikipedia.org/wiki/Convex_polygon), determine the shape and orientation of said polygon. The polygon could be solid or wireframe, hand-drawn or computer generated, and the input image may contain significant background noise.
+Given a bitmap image containing at-most one [convex polygon](https://en.wikipedia.org/wiki/Convex_polygon), determine the shape, orientation and side-lengths of said polygon. The polygon could be solid or wireframe, hand-drawn or computer generated, and the input image may contain significant background noise.
 
 Some example images may look like:
 
 image1.bmp | diamond.bmp | hexagon.bmp
 ------------ | ------------- | -------
 ![image1.bmp](examples/image1.bmp)|![diamond.bmp](examples/diamond.bmp)|![hexagon.bmp](examples/hexagon.bmp)
-## Our Solution
+## Our Approach
 
 ### System Overview
 
@@ -31,6 +31,15 @@ image1.bmp | diamond.bmp | hexagon.bmp
 #### Stage 7: Edge Count & Orientation
 
 ### Examples
+STAGE|image1.bmp | diamond.bmp | hexagon.bmp
+----|------------ | ------------- | -------
+**READ**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.gray.png)|![hexagon.bmp](examples/hexagon.bmp)
+**BLUR**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.blur.png)|![hexagon.bmp](examples/hexagon.bmp)
+**OTSU**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.otsu.png)|![hexagon.bmp](examples/hexagon.bmp)
+**XGrad** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.xgrad.png)|![hexagon.bmp](examples/hexagon.bmp)
+**YGrad** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.ygrad.png)|![hexagon.bmp](examples/hexagon.bmp)
+**Grad**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.gradOnly.png)|![hexagon.bmp](examples/hexagon.bmp)
+**Hough** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.hough.png)|![hexagon.bmp](examples/hexagon.bmp)
 
 ## Results
 
