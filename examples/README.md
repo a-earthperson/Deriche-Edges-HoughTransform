@@ -7,7 +7,7 @@ image1.bmp|image2.bmp|image3.bmp
 
 ## Computer generated, sloid, clean
 ![noisy.bmp](noisy.bmp)|![noisy2.bmp](noisy2.bmp)
--|-|-
+-|-
 noisy.bmp|noisy2.bmp
 
 ## hand-drawn, hollow, noisy
