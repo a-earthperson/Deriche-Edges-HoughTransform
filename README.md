@@ -33,13 +33,13 @@ image1.bmp | diamond.bmp | hexagon.bmp
 ### Examples
 STAGE|image1.bmp | diamond.bmp | hexagon.bmp
 ----|------------ | ------------- | -------
-**READ**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.gray.png)|![hexagon.bmp](examples/hexagon.bmp)
-**BLUR**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.blur.png)|![hexagon.bmp](examples/hexagon.bmp)
-**OTSU**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.otsu.png)|![hexagon.bmp](examples/hexagon.bmp)
-**XGrad** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.xgrad.png)|![hexagon.bmp](examples/hexagon.bmp)
-**YGrad** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.ygrad.png)|![hexagon.bmp](examples/hexagon.bmp)
-**Grad**  |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.gradOnly.png)|![hexagon.bmp](examples/hexagon.bmp)
-**Hough** |![image1.bmp](examples/image1.bmp)|![diamond.bmp](sample_outputs/diamond/diamond.hough.png)|![hexagon.bmp](examples/hexagon.bmp)
+**READ**  |![image1.bmp](sample_outputs/image1/image1.gray.png)|![diamond.bmp](sample_outputs/diamond/diamond.gray.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.gray.png)
+**BLUR**  |![image1.bmp](sample_outputs/image1/image1.blur.png)|![diamond.bmp](sample_outputs/diamond/diamond.blur.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.blur.png)
+**OTSU**  |![image1.bmp](sample_outputs/image1/image1.otsu.png)|![diamond.bmp](sample_outputs/diamond/diamond.otsu.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.otsu.png)
+**XGrad** |![image1.bmp](sample_outputs/image1/image1.xgrad.png)|![diamond.bmp](sample_outputs/diamond/diamond.xgrad.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.xgrad.png)
+**YGrad** |![image1.bmp](sample_outputs/image1/image1.ygrad.png)|![diamond.bmp](sample_outputs/diamond/diamond.ygrad.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.ygrad.png)
+**Grad**  |![image1.bmp](sample_outputs/image1/image1.gradOnly.png)|![diamond.bmp](sample_outputs/diamond/diamond.gradOnly.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.gradOnly.png)
+**Hough** |![image1.bmp](sample_outputs/image1/image1.hough.png)|![diamond.bmp](sample_outputs/diamond/diamond.hough.png)|![hexagon.bmp](sample_outputs/hexagon/hexagon.hough.png)
 
 ## Results
 
