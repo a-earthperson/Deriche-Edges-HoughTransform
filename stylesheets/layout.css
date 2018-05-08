@@ -29,6 +29,12 @@ section > hr {
 	margin: 0px 0px 10px 0px;
 }
 
+.source {
+	text-align: center;
+	text-transform: uppercase;
+	color: #373335;
+	font-family: "Oswald", "Georgia", "Times New Roman", serif;
+}
 contactcard > name > sup {
     vertical-align: super;
     font-size: 0.9rem;

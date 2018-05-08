@@ -12,17 +12,16 @@
 </script>
 
 	<meta charset="utf-8">
-	<title>Arjun</title>
+	<title>Deriche-Hough-Transform</title>
 	<meta name="description" content="Convex polygon detection using Deriche edge detector, Otsu's thresholder and Linear Hough Transform">
 	<meta name="author" content="Arjun">
-
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
 
   <link rel="stylesheet" href="https://arjun372.github.io/stylesheets/base.css">
 	<link rel="stylesheet" href="https://arjun372.github.io/stylesheets/skeleton.css">
 	<link rel="stylesheet" href="stylesheets/layout.css">
   <link rel="stylesheet" href="stylesheets/toc.css">
+  <link rel="stylesheet" href="stylesheets/table.css">
 
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Oswald:400,700|Open+Sans:400,700" rel="stylesheet">
@@ -36,14 +35,17 @@
       <hr style="margin:0px 0px 20px 0;">
       <section>
         <h1>Convex Polygon Detection using Linear Hough Transform</h1>
-        <p>Polygon detection framework for bitmap images written in C that implements Otsu's thresholding and a Deriche edge detector for blurring, calculation of magnitude and gradient direction, non-maximum suppression and hysteresis thresholding. As a final step, it performs a Hough transform to detect the number and orientation of each polygon edge in the source image.</p>
+        <p> This project implements a <a href="https://en.wikipedia.org/wiki/Convex_polygon">convex polygon</a> detector using the linear <a href="https://en.wikipedia.org/wiki/Hough_transform">Hough Transform</a>. In addition, it implements four notable filtering algorithms (Deriche, Otsu, non-maximum-suppression, hysteresis thresholding) as preprocessing steps to clean up the source image. Of note is the <a href="https://en.wikipedia.org/wiki/Deriche_edge_detector">Deriche Filter</a>, which implements gradient calculation and blurring through trivial manipulation of filter parameters.</p>
       </section>
-
-
+      <section>
+      <p>Source Git repository for this project is located at : <a href="https://github.com/arjun372/Deriche-Edges-HoughTransform/">Deriche-Edges-HoughTransform</a></p>
+      <div style="text-align:center"><a class="button" href="https://github.com/arjun372/Deriche-Edges-HoughTransform/archive/master.zip"><h4 class="source">Download Source Code</h4></a></div>
+      </section>
       <toc>
         <h5>Contents</h5>
         <hr>
         <ol type="i">
+          <li><a href=#11>The Problem</a></li>
           <li><a href="#1">System Overview</a>
               <ul style="list-style-type:disc">
                 <li><a href="#2">Stage 1: Read Bitmap as Matrix</a>
@@ -61,8 +63,25 @@
       </toc>
 
     <section>
+
+    <h3 id="11">The Problem</h3>
+    <hr>
+    <p>Given a bitmap image containing at-most one convex polygon, determine the shape, orientation and side-lengths of said polygon. The polygon could be solid or wireframe, hand-drawn or computer generated, and the input image may contain significant background noise.</p>
+    <p>Some example images may look like:</p>
+    <table>
+      <caption>Sample Images</caption>
+      <tr class="table_header">
+        <th>image1.bmp</th>
+        <th>image2.bmp</th>
+        <th>image3.bmp</th>
+      </tr>
+      <tr>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.gray.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.gray.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.gray.png"/></td>
+    </table>
     <!-- System Overview -->
-    <h3 id="1">System Overview</h2>
+    <h3 id="1">System Overview</h3>
     <hr>
 
     <!--  Stage 1 -->
@@ -96,12 +115,12 @@
     </section>
 
     <section>
-    <h3 id="9">Examples</h2>
+    <h3 id="9">Examples</h3>
     <hr>
     </section>
 
     <section>
-    <h3 id="10">Instructions</h2>
+    <h3 id="10">Instructions</h3>
     <hr>
     </section>
 

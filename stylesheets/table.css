@@ -1,0 +1,21 @@
+.table_header {
+  font-weight: bold;
+}
+
+table {
+  text-align: center;
+  align:center;
+  border:1px solid #ccc;
+}
+
+table > caption {
+  font-weight: bold;
+  font-size: 110%;
+  padding:2px;
+  border:1px solid #ccc;
+}
+
+.med_thumb {
+  height:100%;
+  width:auto;
+}
