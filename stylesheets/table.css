@@ -30,7 +30,8 @@ table > caption {
 
 .med_thumb {
   max-width: 100%;
-  width:128px;
+  width:100px;
+  border: 1px solid #ddd;
 }
 
 .lg_thumb {
