@@ -23,6 +23,10 @@
   <link rel="stylesheet" href="stylesheets/toc.css">
   <link rel="stylesheet" href="stylesheets/table.css">
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Oswald:400,700|Open+Sans:400,700" rel="stylesheet">
 	<!--[if lt IE 9]>
@@ -86,6 +90,13 @@
     <!-- System Overview -->
     <h3 id="1">System Overview</h3>
     <hr>
+    <p>Hey</p>
+    <pre><code class="c">int main() {
+      int x = 32;
+      for(x = 0 ; x < 32; x++) {
+        printf("hello\n");
+      }
+    }</code></pre>
 
     <!--  Stage 1 -->
     <h4 id="2">Stage 1: Read Bitmap as Matrix</h4>
@@ -120,6 +131,105 @@
     <section>
     <h3 id="9">Examples</h3>
     <hr>
+    <table class="toc">
+      <caption>Sample Images</caption>
+      <tr class="table_header">
+        <th></th>
+        <th>image1.bmp</th>
+        <th>hexagon.bmp</th>
+        <th>diamond.bmp</th>
+      </tr>
+      <tr>
+        <td class="tag">Source</td>
+        <td><img class="med_thumb" src="examples/image1.bmp"/></td>
+        <td><img class="med_thumb" src="examples/hexagon.bmp"/></td>
+        <td><img class="med_thumb" src="examples/diamond.bmp"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Read</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.gray.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.gray.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.gray.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Blur</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.blur.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.blur.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.blur.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Otsu Threshold</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.otsu.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.otsu.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.otsu.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">X-Gradient</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.xgrad.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.xgrad.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.xgrad.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Y-Gradient</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.ygrad.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.ygrad.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.ygrad.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Grad-Mags</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.gradOnly.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.gradOnly.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.gradOnly.png"/></td>
+      </tr>
+      <tr class="arrow">
+        <td></td>
+        <td>↓</td>
+        <td>↓</td>
+        <td>↓</td>
+      </tr>
+      <tr>
+        <td class="tag">Hough</td>
+        <td><img class="med_thumb" src="sample_outputs/image1/image1.hough.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.hough.png"/></td>
+        <td><img class="med_thumb" src="sample_outputs/diamond/diamond.hough.png"/></td>
+      </tr>
+    </table>
     </section>
 
     <section>

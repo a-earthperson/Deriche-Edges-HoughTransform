@@ -5,6 +5,10 @@ body {
 	color: rgb(48, 48, 48);
 }
 
+code {
+	font-family: monospace;
+}
+
 .copyright {
 	text-align: center;
 	width: 100%;
