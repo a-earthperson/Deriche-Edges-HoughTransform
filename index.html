@@ -38,8 +38,10 @@
         <p> This project implements a <a href="https://en.wikipedia.org/wiki/Convex_polygon">convex polygon</a> detector using the linear <a href="https://en.wikipedia.org/wiki/Hough_transform">Hough Transform</a>. In addition, it implements four notable filtering algorithms (Deriche, Otsu, non-maximum-suppression, hysteresis thresholding) as preprocessing steps to clean up the source image. Of note is the <a href="https://en.wikipedia.org/wiki/Deriche_edge_detector">Deriche Filter</a>, which implements gradient calculation and blurring through trivial manipulation of filter parameters.</p>
       </section>
       <section>
-      <p>Source Git repository for this project is located at : <a href="https://github.com/arjun372/Deriche-Edges-HoughTransform/">Deriche-Edges-HoughTransform</a></p>
-      <div style="text-align:center"><a class="button" href="https://github.com/arjun372/Deriche-Edges-HoughTransform/archive/master.zip"><h4 class="source">Download Source Code</h4></a></div>
+      <div style="text-align:center">
+        <a class="button" href="https://github.com/arjun372/Deriche-Edges-HoughTransform/archive/master.zip"><h4 class="source">Download Source Code</h4></a>
+        <a class="button" href="https://github.com/arjun372/Deriche-Edges-HoughTransform/"><h4 class="git">Git Repo</h4></a>
+      </div>
       </section>
       <toc>
         <h5>Contents</h5>
@@ -67,18 +69,19 @@
     <h3 id="11">The Problem</h3>
     <hr>
     <p>Given a bitmap image containing at-most one convex polygon, determine the shape, orientation and side-lengths of said polygon. The polygon could be solid or wireframe, hand-drawn or computer generated, and the input image may contain significant background noise.</p>
-    <p>Some example images may look like:</p>
-    <table>
+    <p>Some example images may look like: </p>
+    <table class="toc">
       <caption>Sample Images</caption>
-      <tr class="table_header">
-        <th>image1.bmp</th>
-        <th>image2.bmp</th>
-        <th>image3.bmp</th>
-      </tr>
       <tr>
         <td><img class="med_thumb" src="sample_outputs/image1/image1.gray.png"/></td>
         <td><img class="med_thumb" src="sample_outputs/hexagon/hexagon.gray.png"/></td>
         <td><img class="med_thumb" src="sample_outputs/diamond/diamond.gray.png"/></td>
+      </tr>
+      <tr class="table_header">
+        <th>image1.bmp</th>
+        <th>hexagon.bmp</th>
+        <th>diamond.bmp</th>
+      </tr>
     </table>
     <!-- System Overview -->
     <h3 id="1">System Overview</h3>

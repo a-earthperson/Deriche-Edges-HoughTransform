@@ -1,21 +1,38 @@
+table {
+  display: table;
+  border: 1px solid #ddd;
+	background-color: #fafafa;
+	padding: 10px;
+	font-family: "Open Sans", "HelveticaNeue", 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0px 0px 20px 0px;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+  border-collapse: unset;
+  margin-left: auto;
+  margin-right: auto;
+}
 .table_header {
   font-weight: bold;
 }
 
-table {
-  text-align: center;
-  align:center;
-  border:1px solid #ccc;
+
+td {
+  padding:8px;
 }
 
 table > caption {
   font-weight: bold;
   font-size: 110%;
-  padding:2px;
-  border:1px solid #ccc;
+  padding:6px;
+  color: #d85b70;
 }
 
 .med_thumb {
-  height:100%;
-  width:auto;
+  max-width: 100%;
+  width:128px;
+}
+
+.lg_thumb {
+  width:256px;
 }
