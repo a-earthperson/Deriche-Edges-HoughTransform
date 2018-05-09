@@ -78,15 +78,15 @@ void processImage(char *inputFile, const Options* filterOptions) {
     //normalizeImage(houghImage);
     if(WRITE_CSV) Mat2CSV(inputFile, houghImage, ".hough.csv");
 
-    size_t n = houghImage->width * houghImage->height;
-    size_t i;
-    for(i = 0; i < n; i++)
-    {
-        houghImage->data[i] = expf(0.01f * houghImage->data[i]);
-    }
+    // size_t n = houghImage->width * houghImage->height;
+    // size_t i;
+    // for(i = 0; i < n; i++)
+    // {
+    //     houghImage->data[i] = expf(0.01f * houghImage->data[i]);
+    // }
     /** Step 5b: Linear Hough Transform **/
-   // Mat_elementwise2(houghImage, houghImage, multipy);
-    //normalizeImage(houghImage);
+    Mat_elementwise2(houghImage, houghImage, multipy);
+    normalizeImage(houghImage);
     if(WRITE_CSV) Mat2CSV(inputFile, houghImage, ".hough-powers.csv");
 
     //Mat_elementwise1(houghImage, &sq);
