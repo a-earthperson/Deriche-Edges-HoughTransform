@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="stylesheets/toc.css">
   <link rel="stylesheet" href="stylesheets/table.css">
 
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
@@ -105,7 +106,22 @@
     <!--  Stage 1 -->
     <h4 id="2">Stage 1: Read Bitmap as Matrix</h4>
     <hr>
-
+      <p>
+        <strong>The current implementation only allows for reading a 24-bit BMP image.</strong>
+      </p>
+      <p>
+        The source RGB bitmap image is read and converted to a 2D gray float matrix, with magnitudes normalized from <code class="c">0.0f</code> (black) to <code class="c">255.0f</code> (white).
+        For a given \(N*M\) RGB bitmap image, an \(N*M\) matrix <code class="c">'Mat S'</code> is created. The Mat struct type is declared as:
+<pre><code class="c">typedef struct
+{
+  size_t width;
+  size_t height;
+  float *data;
+} Mat;</code></pre>
+<br>
+        Given row \(i\) and column \(j\), each floating point gray pixel value in S is calculated as the normalized <strong>\(L^2  norm\)</strong> (<a href="https://en.wikipedia.org/wiki/Norm_(mathematics)#Euclidean_norm">euclidean norm</a>) of a three dimensional vector:
+        $$S_{ij} = {255.0 \over max(S_{ij})}*{\sqrt{{R_{ij}}^2 + {G_{ij}}^2 + {B_{ij}}^2}}$$
+      </p>
     <!--  Stage 2 -->
     <h4 id="3">Stage 2: Deriche Blur Filter</h4>
     <hr>
