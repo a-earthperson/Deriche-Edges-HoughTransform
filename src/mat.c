@@ -214,7 +214,7 @@ Mat *color2gray(const unsigned char *image_data, const size_t width, const size_
         const float R = (float)((unsigned char) image_data[idx]);     // 3i + 0
         const float G = (float)((unsigned char) image_data[idx+1]);   // 3i + 1
         const float B = (float)((unsigned char) image_data[idx+2]);   // 3i + 2
-        const float V = hypotf(R, hypotf(G, B));
+        const float V = sqrtf((R*R) + (G*G) + (B*B));
         if(V > max)
         {
             max = V;
