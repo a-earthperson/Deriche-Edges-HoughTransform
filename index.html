@@ -121,6 +121,10 @@
 <br>
         Given row \(i\) and column \(j\), each floating point gray pixel value in S is calculated as the normalized <strong>\(L^2  norm\)</strong> (<a href="https://en.wikipedia.org/wiki/Norm_(mathematics)#Euclidean_norm">euclidean norm</a>) of a three dimensional vector:
         $$S_{ij} = {255.0 \over max(S_{ij})}*{\sqrt{{R_{ij}}^2 + {G_{ij}}^2 + {B_{ij}}^2}}$$
+        Ofcourse, computing \(max(S_{ij})\) requires that this computation be completed in two passes. If you don't care about normalization, then a single pass will be enough. The current implementation works without the need for normalization, and is consequently a little faster.
+
+        If inversion is required (for example, if the image is dominantly white), then computing \(max(S_{ij})\) becomes inevitable. The calculation is modified to:
+        $$S_{ij} = 255.0 - {255.0 \over max(S_{ij})}*{\sqrt{{R_{ij}}^2 + {G_{ij}}^2 + {B_{ij}}^2}}$$
       </p>
     <!--  Stage 2 -->
     <h4 id="3">Stage 2: Deriche Blur Filter</h4>
