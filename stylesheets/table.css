@@ -59,3 +59,22 @@ table > caption {
   width:256px;
   border: 1px solid #ddd;
 }
+
+.full {
+  max-width: 95%;
+  width:512px;
+  margin-bottom: 8px;
+  border: 2px solid #ddd;
+}
+
+.centered {
+display: block;
+margin-left: auto;
+margin-right: auto;
+}
+
+.caption {
+  text-align: center;
+  font-weight: bold;
+  font-size: 85%;
+}

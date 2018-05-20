@@ -96,13 +96,26 @@
     <!-- System Overview -->
     <h3 id="1">System Overview</h3>
     <hr>
-    <!-- <pre><code class="c">int main() {
-      int x = 32;
-      for(x = 0 ; x < 32; x++) {
-        printf("hello\n");
-      }
-    }</code></pre> -->
-
+    <img class="full centered" src="assets/sys_overview.jpg"/>
+    <p class="caption">
+      The crappy chalk-diagram (above) is a temporary stand-in for an awesome vector diagram (vividly visible when imagined).
+    </p>
+    <p>
+      The diagram above illustrates the overall system architecture. Our implementation detects the polygon in seven stages,
+      although only six have been depicted this diagram. We begin by reading the source BMP as a gray 2D matrix.
+      Next, we apply a blurring filter, implemented using the Deriche IIR filter. Blurring parameter \( α_b \) controls the
+      amount of blurring. Once blurred, the grayscale image is converted to a binary image using
+      <a href="https://en.wikipedia.org/wiki/Otsu%27s_method">Otsu's Method</a>, a clustering-based image thresholding algorithm
+      that aims to eliminate background noise.
+    </p>
+    <p>
+      The binary image is used for \(x\) and \(y\) gradient calculation using the Deriche filter, where the gradient parameters
+      are set to be \(α_x = α_y\). The final gradient magnitude is calculated as the L-2 norm \(G_{M} = \sqrt{{G_X}^2 + {G_Y}^2} \)
+      of the two resultant gradient matrices.
+    </p>
+    <p>
+      The penultimate step is to perform a linear Hough Transform on the gradient matrix \(G_{M}\), after which the densest peaks can be detected to determine the number and orientation of the edges of the polygon using a simple thresholding algorithm.</p>
+    </p>
     <!--  Stage 1 -->
     <h4 id="2">Stage 1: Read Bitmap as Matrix</h4>
     <hr>
