@@ -114,7 +114,8 @@
       of the two resultant gradient matrices.
     </p>
     <p>
-      The penultimate step is to perform a linear Hough Transform on the gradient matrix \(G_{M}\), after which the densest peaks can be detected to determine the number and orientation of the edges of the polygon using a simple thresholding algorithm.</p>
+      The penultimate step is to perform a linear Hough Transform on the gradient matrix \(G_{M}\), after which the densest peaks
+      can be detected to determine the number and orientation of the edges of the polygon using a simple thresholding algorithm.
     </p>
     <!--  Stage 1 -->
     <h4 id="2">Stage 1: Read Bitmap as Matrix</h4>
@@ -123,8 +124,9 @@
         <strong>The current implementation only allows for reading a 24-bit BMP image.</strong>
       </p>
       <p>
-        The source RGB bitmap image is read and converted to a 2D gray float matrix, with magnitudes normalized from <code class="c">0.0f</code> (black) to <code class="c">255.0f</code> (white).
-        For a given \(N*M\) RGB bitmap image, an \(N*M\) matrix <code class="c">'Mat S'</code> is created. The Mat struct type is declared as:
+        The source RGB bitmap image is read and converted to a 2D gray float matrix, with magnitudes normalized from
+        <code class="c">0.0f</code> (black) to <code class="c">255.0f</code> (white). For a given \(N*M\) RGB bitmap image,
+        an \(N*M\) matrix <code class="c">'Mat S'</code> is created. The Mat struct type is declared as:
 <pre><code class="c">typedef struct
 {
   size_t width;
