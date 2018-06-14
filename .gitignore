@@ -17,7 +17,7 @@ edgedetect
 
 config.status
 .dirstamp
-compile
-missing
+#compile
+#missing
 depcomp
-install-sh
+#install-sh
